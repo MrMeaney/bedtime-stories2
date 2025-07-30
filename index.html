@@ -783,7 +783,29 @@
 
         document.getElementById('storyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            await generateStory();
+            console.log('Form submitted, starting story generation...');
+            
+            try {
+                await generateStory();
+            } catch (error) {
+                console.error('Story generation completely failed:', error);
+                document.getElementById('storyContent').innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <h3 style="color: #ff6b6b; margin-bottom: 20px;">😔 Something went wrong!</h3>
+                        <p style="font-size: 1.1em; margin-bottom: 20px;">Please try again or refresh the page.</p>
+                        <button onclick="location.reload()" style="
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 20px;
+                            cursor: pointer;
+                            font-size: 1em;
+                            margin-top: 15px;
+                        ">🔄 Refresh Page</button>
+                    </div>
+                `;
+            }
         });
 
         async function generateStory() {
