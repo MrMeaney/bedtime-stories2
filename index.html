@@ -298,6 +298,16 @@
             flex: 1;
         }
 
+        .book-page.cover-page .page-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+
         @keyframes pageFlip {
             0% { transform: rotateY(-90deg); opacity: 0; }
             50% { transform: rotateY(-45deg); opacity: 0.5; }
@@ -826,81 +836,53 @@
         }
 
         function createStoryPrompt(character, setting, themes, element, lesson) {
-            // Generate unique story elements
+            // Simpler, shorter prompt for better AI success
             const storyMood = getRandomElement([
-                'gentle and dreamy', 'playful and adventurous', 'cozy and heartwarming', 
-                'magical and mysterious', 'cheerful and uplifting', 'whimsical and fun'
+                'gentle and cozy', 'playful and fun', 'magical and wonder-filled', 
+                'heartwarming and sweet', 'cheerful and bright'
             ]);
 
-            const storyOpening = getRandomElement([
-                `Start with ${character} in the middle of an interesting activity`,
-                `Begin with ${character} noticing something unusual in their world`,
-                `Open with ${character} meeting someone new unexpectedly`,
-                `Start with ${character} trying to solve a small mystery`,
-                `Begin with ${character} preparing for something special`,
-                `Open with ${character} discovering ${element} in an unexpected place`
-            ]);
+            return `Write a short bedtime story for young children (ages 2-5).
 
-            const storyStructure = getRandomElement([
-                'Problem → Journey → Solution → Happy Ending',
-                'Discovery → Adventure → Learning → Peaceful Conclusion',
-                'Meeting → Challenge → Cooperation → Celebration',
-                'Mystery → Investigation → Understanding → Resolution',
-                'Invitation → Quest → Achievement → Return Home'
-            ]);
+Story details:
+- Main character: a ${character}
+- Setting: ${setting}  
+- Include: ${element}
+- Theme: ${themes}
+- Lesson: ${lesson}
+- Mood: ${storyMood}
 
-            return `Write a complete bedtime story for children ages 2-5. This must be a SHORT, SIMPLE story with clear structure.
+Requirements:
+- Write exactly 8 short paragraphs
+- Each paragraph should be 2-3 simple sentences
+- Use easy words for little children
+- Include some dialogue with "quotes"
+- Make it gentle and perfect for bedtime
+- Have a clear beginning, middle, and peaceful ending
 
-CHARACTER & SETTING:
-- Main character: ${character} 
-- Location: ${setting}
-- Key themes: ${themes}
-- Important object: ${element}
-- Lesson to teach: ${lesson}
-
-STORY REQUIREMENTS:
-- Length: EXACTLY 8 short paragraphs (not 10!)
-- Each paragraph: 2-3 simple sentences maximum
-- Story mood: ${storyMood}
-- Opening approach: ${storyOpening}
-- Structure: ${storyStructure}
-
-STORY STRUCTURE (MANDATORY):
-Paragraph 1-2: BEGINNING - Introduce character and situation
-Paragraph 3-4: MIDDLE PART 1 - Present gentle challenge or discovery  
-Paragraph 5-6: MIDDLE PART 2 - Show character learning and growing
-Paragraph 7-8: END - Resolve peacefully with lesson learned
-
-WRITING STYLE:
-- Use simple, clear language for young children
-- Include dialogue with "quotes"
-- Add sensory details (what they see, hear, feel)
-- Make it original and creative - avoid fairy tale clichés
-- Keep it gentle and suitable for bedtime
-- End on a calm, sleepy note
-
-FORBIDDEN:
-- Don't use "Once upon a time" or "Long ago"
-- Don't make it scary or intense
-- Don't use complex vocabulary
-- Don't write more than 8 paragraphs
-
-Write a complete, original story now:`;
+Start writing the story now:`;
         }
 
         async function createAIStory(character, setting, themes, element, lesson) {
             const prompt = createStoryPrompt(character, setting, themes, element, lesson);
             
-            // Use better models and improved parameters
+            // Try a variety of different models - some might be more available
             const models = [
-                "microsoft/DialoGPT-medium",
-                "facebook/blenderbot-400M-distill",
-                "EleutherAI/gpt-neo-1.3B"
+                "gpt2",
+                "distilgpt2", 
+                "microsoft/DialoGPT-small",
+                "EleutherAI/gpt-neo-125M",
+                "facebook/blenderbot-90M"
             ];
             
-            for (const model of models) {
+            for (let i = 0; i < models.length; i++) {
+                const model = models[i];
                 try {
-                    console.log(`Trying AI model: ${model}`);
+                    console.log(`Trying AI model ${i + 1}/${models.length}: ${model}`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+                    
                     const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
                         method: 'POST',
                         headers: {
@@ -909,39 +891,72 @@ Write a complete, original story now:`;
                         body: JSON.stringify({
                             inputs: prompt,
                             parameters: {
-                                max_new_tokens: 800,  // Shorter for 8 paragraphs
-                                temperature: 1.0,     // More creative
-                                top_p: 0.95,
+                                max_new_tokens: 600,
+                                temperature: 0.9,
+                                top_p: 0.9,
                                 do_sample: true,
                                 return_full_text: false,
-                                repetition_penalty: 1.3,  // Stronger anti-repetition
-                                length_penalty: 1.0
+                                repetition_penalty: 1.2
                             },
                             options: {
                                 wait_for_model: true,
                                 use_cache: false
                             }
-                        })
+                        }),
+                        signal: controller.signal
                     });
+                    
+                    clearTimeout(timeoutId);
+
+                    console.log(`Model ${model} response status: ${response.status}`);
 
                     if (response.ok) {
                         const result = await response.json();
-                        console.log('AI Response received:', result);
+                        console.log(`Model ${model} result:`, result);
                         
-                        if (result && result[0] && result[0].generated_text && result[0].generated_text.trim().length > 300) {
-                            const story = parseAIStory(result[0].generated_text, character, setting);
-                            console.log('Story parsed successfully:', story);
+                        // Check for various response formats
+                        let generatedText = '';
+                        if (result && Array.isArray(result) && result[0]) {
+                            if (result[0].generated_text) {
+                                generatedText = result[0].generated_text;
+                            } else if (typeof result[0] === 'string') {
+                                generatedText = result[0];
+                            }
+                        } else if (result && result.generated_text) {
+                            generatedText = result.generated_text;
+                        } else if (typeof result === 'string') {
+                            generatedText = result;
+                        }
+                        
+                        if (generatedText && generatedText.trim().length > 200) {
+                            console.log(`Success with model ${model}!`);
+                            const story = parseAIStory(generatedText, character, setting);
                             return story;
                         } else {
-                            console.log('AI response too short or empty');
+                            console.log(`Model ${model} response too short:`, generatedText);
                         }
                     } else {
                         const errorText = await response.text();
-                        console.log(`Model ${model} failed:`, errorText);
+                        console.log(`Model ${model} HTTP error ${response.status}:`, errorText);
+                        
+                        // If it's a rate limit or loading error, try next model immediately
+                        if (response.status === 429 || response.status === 503) {
+                            continue;
+                        }
                     }
                 } catch (error) {
-                    console.log(`Model ${model} error:`, error);
-                    continue;
+                    console.log(`Model ${model} failed:`, error.message);
+                    
+                    // Don't wait long for timeouts, just try next model
+                    if (error.name === 'AbortError') {
+                        console.log(`Model ${model} timed out, trying next...`);
+                        continue;
+                    }
+                }
+                
+                // Small delay between attempts to avoid overwhelming the API
+                if (i < models.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
             
@@ -954,6 +969,7 @@ Write a complete, original story now:`;
             // Clean up the AI text
             cleanText = cleanText.replace(/^.*Write a complete.*story now:\s*/i, '');
             cleanText = cleanText.replace(/^Story:\s*/i, '');
+            cleanText = cleanText.replace(/^Start writing the story now:\s*/i, '');
             
             // Split into paragraphs more intelligently
             let paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 20);
@@ -1011,501 +1027,9 @@ Write a complete, original story now:`;
             };
         }
 
-        async function createAIStory(character, setting, themes, element, lesson) {
-            const prompt = createStoryPrompt(character, setting, themes, element, lesson);
-            
-            // Try multiple Hugging Face models for reliability
-            const models = [
-                "microsoft/DialoGPT-medium",
-                "gpt2-medium", 
-                "EleutherAI/gpt-neo-1.3B",
-                "facebook/blenderbot-400M-distill"
-            ];
-            
-            for (const model of models) {
-                try {
-                    console.log(`Trying AI model: ${model}`);
-                    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            inputs: prompt,
-                            parameters: {
-                                max_new_tokens: 1500,
-                                temperature: 0.9,
-                                top_p: 0.95,
-                                do_sample: true,
-                                return_full_text: false,
-                                repetition_penalty: 1.2
-                            },
-                            options: {
-                                wait_for_model: true,
-                                use_cache: false
-                            }
-                        })
-                    });
-
-                    console.log(`Response status: ${response.status}`);
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('AI Response:', result);
-                        
-                        if (result && result[0] && result[0].generated_text && result[0].generated_text.trim().length > 200) {
-                            console.log('AI story generated successfully!');
-                            return parseAIStory(result[0].generated_text, character, setting);
-                        } else {
-                            console.log('AI response too short or empty');
-                        }
-                    } else {
-                        const errorText = await response.text();
-                        console.log(`Model ${model} failed with status ${response.status}: ${errorText}`);
-                    }
-                } catch (error) {
-                    console.log(`Model ${model} failed with error:`, error);
-                    continue;
-                }
-            }
-            
-            console.log('All AI models failed, using template fallback');
-            throw new Error('All AI models failed');
-        }
-
-        function createStoryPrompt(character, setting, themes, element, lesson) {
-            // Generate random creative elements for uniqueness
-            const storyStyle = getRandomElement([
-                'adventure story with unexpected twists',
-                'gentle mystery that unfolds slowly',
-                'heartwarming tale of discovery',
-                'magical journey with meaningful encounters',
-                'whimsical story full of wonder',
-                'cozy tale with delightful surprises',
-                'enchanting story with talking objects',
-                'uplifting adventure about overcoming challenges'
-            ]);
-
-            const narrativeVoice = getRandomElement([
-                'warm and conversational, like a grandparent telling a story',
-                'playful and energetic, with lots of descriptive details',
-                'gentle and soothing, perfect for bedtime',
-                'curious and wondering, asking gentle questions',
-                'wise and thoughtful, with deeper meanings',
-                'cheerful and optimistic, celebrating small joys'
-            ]);
-
-            const uniqueElements = getRandomElement([
-                'Include at least 3 different magical creatures as supporting characters',
-                'Add sensory details - what things smell, sound, feel, and look like',
-                'Include a gentle problem that requires creative thinking to solve',
-                'Add moments of humor and playfulness throughout',
-                'Include weather or seasonal elements that affect the story',
-                'Feature a special celebration or gathering'
-            ]);
-
-            const characterPersonality = generateCharacterPersonality(character);
-            const settingDetails = generateSettingDetails(setting);
-
-            // Force completely different story openings
-            const storyOpening = getRandomElement([
-                `Start with ${character} in the middle of doing something unusual (like painting with moonbeams or having a tea party with clouds)`,
-                `Begin with ${character} waking up to find something completely different about their world`,
-                `Open with ${character} receiving a mysterious invitation or message`,
-                `Start with ${character} overhearing a conversation between two unlikely creatures`,
-                `Begin with ${character} following a strange sound, smell, or light`,
-                `Open with ${character} finding that their favorite place has magically changed overnight`,
-                `Start with ${character} trying to solve a puzzle or riddle they discovered`,
-                `Begin with ${character} preparing for an important event or celebration`,
-                `Open with ${character} meeting someone completely unexpected`,
-                `Start with ${character} noticing that something they use every day has started acting magical`,
-                `Begin with ${character} getting lost in a familiar place that's become unfamiliar`,
-                `Open with ${character} discovering they have a new ability they didn't know about`,
-                `Start during a storm, unusual weather, or magical phenomenon`,
-                `Begin with ${character} helping someone else with their problem first`,
-                `Open with ${character} finding an object that doesn't belong in their world`
-            ]);
-
-            const firstParagraphStyle = getRandomElement([
-                'Start with action - show the character already doing something interesting',
-                'Begin with dialogue - let someone speak first, then reveal who they are',
-                'Open with a sensory detail - a sound, smell, or sight that draws us in',
-                'Start with a question the character is wondering about',
-                'Begin by describing something magical happening right now',
-                'Open with the character making a discovery',
-                'Start with an emotional moment - joy, curiosity, or gentle concern'
-            ]);
-
-            const timeOfDay = getRandomElement([
-                'during a purple-pink sunrise when everything looks different',
-                'at the golden hour when shadows are long and magical',
-                'during a gentle afternoon when the light is warm and sleepy',
-                'in the deep blue twilight when stars are just appearing',
-                'during a misty early morning when everything is soft and quiet',
-                'at midnight when only magical creatures are awake',
-                'during a rainbow-filled moment after gentle rain'
-            ]);
-
-            return `You are a master children's storyteller creating a unique bedtime story. This story must start completely differently from typical children's stories.
-
-STORY REQUIREMENTS:
-- Main Character: ${character} (${characterPersonality})
-- Setting: ${setting} (${settingDetails})
-- Themes to weave throughout: ${themes}
-- Special magical element: ${element}
-- Important lesson: ${lesson}
-- Story Style: ${storyStyle}
-- Narrative Voice: ${narrativeVoice}
-- Unique Elements: ${uniqueElements}
-- Time Setting: ${timeOfDay}
-
-CRITICAL OPENING REQUIREMENTS:
-- Opening Strategy: ${storyOpening}
-- First Paragraph Style: ${firstParagraphStyle}
-- NEVER use "Once upon a time" or "Long ago" or "In a faraway land"
-- NEVER start with "There was/lived a..."
-- DO NOT start by introducing the character's background or location first
-- Jump directly into action, dialogue, or an intriguing moment
-- Make the first sentence grab attention immediately
-
-CREATIVE GUIDELINES:
-- Write exactly 10 paragraphs, each 3-4 sentences long
-- Use vivid, child-friendly imagery and metaphors
-- Include dialogue from characters (use "quotes")
-- Vary sentence structure - some short, some longer
-- Add specific details that make this story unique (unusual colors, interesting sounds, special textures)
-- Include emotional moments - joy, wonder, gentle challenges, triumph
-- Make the ${element} central to the plot, not just mentioned
-- Show don't tell - let actions demonstrate the lesson
-- End with a satisfying, peaceful conclusion perfect for bedtime
-
-FORBIDDEN OPENING PHRASES:
-- "Once upon a time"
-- "Long ago"
-- "In a faraway land"
-- "There was a"
-- "There lived a"
-- "[Character name] was a"
-- "In the [setting]"
-
-TONE: Magical yet grounded, imaginative yet believable, gentle yet engaging
-
-Create a story that starts with immediate intrigue and feels completely fresh!
-
-Story:`;
-        }
-
-        function generateCharacterPersonality(character) {
-            const personalities = {
-                'friendly dragon': getRandomElement(['loves collecting shiny pebbles and making music with them', 'enjoys baking cloud cookies for friends', 'has a talent for growing rainbow flowers']),
-                'baby dragon': getRandomElement(['is learning to fly and sometimes hiccups sparkles', 'loves bedtime stories and warm milk', 'enjoys playing hide-and-seek in flower petals']),
-                'rainbow dragon': getRandomElement(['paints the sky with different emotions each day', 'can only speak in colors until evening', 'leaves rainbow footprints wherever they walk']),
-                'magical unicorn': getRandomElement(['has a mane that changes with the seasons', 'can heal sadness with gentle touches', 'loves dancing in moonbeams']),
-                'flower fairy': getRandomElement(['speaks only through flower fragrances', 'makes tiny houses from acorn caps', 'can make plants grow by singing to them']),
-                'wise owl': getRandomElement(['collects stories in hollow trees', 'can see the good in everyone\'s heart', 'loves stargazing and making wishes']),
-                'friendly bear': getRandomElement(['gives the best warm hugs in the forest', 'makes honey tea for friends', 'knows every secret path through the woods']),
-                'singing bird': getRandomElement(['carries messages between the clouds', 'wakes up flowers with morning songs', 'can imitate any sound in nature']),
-                'kind princess': getRandomElement(['prefers gardening to wearing crowns', 'talks to animals and understands their worries', 'loves making toys for children']),
-                'magical fairy': getRandomElement(['specializes in fixing broken things with stardust', 'can shrink to ant-size or grow to tree-height', 'keeps a library of wishes in dewdrops'])
-            };
-            
-            return personalities[character] || getRandomElement([
-                'has a special talent for making others smile',
-                'loves helping those in need',
-                'enjoys discovering new things every day',
-                'has a heart full of kindness and wonder'
-            ]);
-        }
-
-        function generateSettingDetails(setting) {
-            const details = {
-                'enchanted forest': getRandomElement(['where the trees whisper ancient secrets and fireflies write stories in the air', 'filled with musical streams and flowers that glow different colors based on emotions', 'where each path leads to a different season and time moves like honey']),
-                'magical kingdom': getRandomElement(['where the castle is built from crystallized laughter and the gardens grow in spirals', 'with bridges made of hardened rainbows and fountains that sing lullabies', 'where the towers are libraries and every room tells a different story']),
-                'cloud city': getRandomElement(['where buildings are made of spun silver clouds and rain is always warm', 'with fluffy pathways that bounce and stars that serve as streetlights', 'where the weather changes based on the citizens\' moods']),
-                'secret garden': getRandomElement(['hidden behind a waterfall of liquid starlight', 'where every flower grants a small wish when treated with kindness', 'that only appears to those who truly need its magic']),
-                'underwater world': getRandomElement(['where coral sings in harmonies and fish paint with their scales', 'filled with gentle currents that carry whispered dreams', 'where sea glass windows show memories of the ocean']),
-                'magical treehouse': getRandomElement(['built in a tree so tall its branches touch different cloud kingdoms', 'with rooms that rearrange themselves based on what you need most', 'where the tree grows different fruits depending on the season of your heart']),
-                'crystal cave': getRandomElement(['where each crystal holds a different color of light and hums a unique melody', 'that grows new rooms whenever someone with a kind heart enters', 'where the walls show reflections of your happiest memories'])
-            };
-            
-            return details[setting] || getRandomElement([
-                'a place where magic feels as natural as breathing',
-                'somewhere that changes to reflect the kindness of its visitors',
-                'a location where ordinary things become extraordinary through love'
-            ]);
-        }
-
-        function parseAIStory(aiText, character, setting) {
-            // Clean up the AI generated text
-            let cleanText = aiText.trim();
-            
-            // Remove the prompt if it was included
-            cleanText = cleanText.replace(/^.*Story:\s*/i, '');
-            
-            // Split into paragraphs
-            let paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-            
-            // If we don't have enough paragraphs, split by periods or other delimiters
-            if (paragraphs.length < 8) {
-                paragraphs = cleanText.split(/\.\s+/).filter(p => p.trim().length > 30);
-            }
-            
-            // Ensure we have at least 8-10 paragraphs
-            if (paragraphs.length < 8) {
-                // Fallback to template system
-                throw new Error('AI story too short');
-            }
-            
-            // Take first 10 paragraphs and clean them
-            const storyPages = paragraphs.slice(0, 10).map(p => {
-                let cleaned = p.trim();
-                // Add period if missing
-                if (!cleaned.endsWith('.') && !cleaned.endsWith('!') && !cleaned.endsWith('?')) {
-                    cleaned += '.';
-                }
-                return cleaned;
-            });
-            
-            // Generate a title
-            const title = generateAITitle(character, setting);
-            
-            return {
-                title: title,
-                pages: storyPages,
-                character: character,
-                setting: setting
-            };
-        }
-
-        function generateAITitle(character, setting) {
-            const titleTemplates = [
-                `The ${capitalize(character)} of ${capitalize(setting)}`,
-                `${capitalize(character)}'s Magical Adventure`,
-                `The Secret of the ${capitalize(character)}`,
-                `${capitalize(character)} and the Magic of ${capitalize(setting)}`,
-                `A ${capitalize(character)}'s Journey`,
-                `The Wonderful ${capitalize(character)}`,
-                `${capitalize(character)}'s Special Day`,
-                `The Kind ${capitalize(character)}`
-            ];
-            
-            return getRandomElement(titleTemplates);
-        }
-
-        function createPersonalizedStory(character, setting, theme, element, lesson) {
-            const storyElements = generateStoryElements(character, setting, theme, element, lesson);
-            const storyTitle = storyElements.title;
-            
-            const pages = [
-                storyElements.opening,
-                storyElements.discovery,
-                storyElements.magicalMoment,
-                storyElements.firstChallenge,
-                storyElements.meetingFriends,
-                storyElements.helpingOthers,
-                storyElements.learningLesson,
-                storyElements.celebration,
-                storyElements.wisdom,
-                storyElements.ending
-            ];
-
-            return { title: storyTitle, pages: pages, character: character, setting: setting };
-        }
-
-        function generateStoryElements(character, setting, theme, element, lesson) {
-            const openings = [
-                `Once upon a time, in a ${setting}, there lived a ${character} who loved ${getRandomActivity()}. Every morning, they would ${getRandomMorningActivity()} and dream of helping others.`,
-                `In the heart of a magical ${setting}, a kind ${character} spent their days ${getRandomActivity()}. They had a special gift for making everyone around them feel ${getRandomEmotion()}.`,
-                `Long ago, in a beautiful ${setting}, there was a ${character} known throughout the land for their ${getRandomQuality()}. They believed that every day was a chance to spread ${theme}.`,
-                `Deep in the ${setting}, where ${getRandomSettingDetail(setting)}, lived a gentle ${character} who had the most wonderful secret - they could ${getRandomMagicalAbility()}.`
-            ];
-
-            const discoveries = [
-                `One ${getRandomTimeOfDay()}, while ${getRandomExploringActivity()}, the ${character} stumbled upon something extraordinary. There, ${getRandomHidingPlace()}, was a ${element} that ${getRandomMagicalProperty()}.`,
-                `During a peaceful walk through the ${setting}, the ${character} heard a ${getRandomSound()} coming from nearby. Following the sound, they discovered a magnificent ${element} that seemed to ${getRandomMagicalBehavior()}.`,
-                `As the ${character} was ${getRandomDailyActivity()}, they noticed something sparkling in the distance. Moving closer, they found a beautiful ${element} that ${getRandomMagicalProperty()}.`,
-                `The ${character} had always been curious about the old legends of the ${setting}. Today, their curiosity led them to discover a legendary ${element} that ${getRandomMagicalBehavior()}.`
-            ];
-
-            const storyElements = {
-                title: `The ${capitalize(character)} and the ${getRandomTitleElement()} of ${capitalize(setting)}`,
-                opening: getRandomElement(openings),
-                discovery: getRandomElement(discoveries),
-                magicalMoment: generateMagicalMoment(character, element),
-                firstChallenge: generateChallenge(character, setting, theme),
-                meetingFriends: generateFriendMeeting(character, setting),
-                helpingOthers: generateHelpingScene(character, element, theme),
-                learningLesson: generateLessonScene(character, lesson, theme),
-                celebration: generateCelebration(character, setting),
-                wisdom: generateWisdom(character, element, theme),
-                ending: generateEnding(character, setting)
-            };
-
-            return storyElements;
-        }
-
         // Helper functions for generating random story elements
         function getRandomElement(array) {
             return array[Math.floor(Math.random() * array.length)];
-        }
-
-        function getRandomActivity() {
-            const activities = ['exploring', 'singing', 'dancing', 'gardening', 'painting', 'collecting flowers', 'watching clouds', 'helping friends'];
-            return getRandomElement(activities);
-        }
-
-        function getRandomMorningActivity() {
-            const activities = ['stretch and yawn', 'greet the sunshine', 'water the flowers', 'say hello to their neighbors', 'practice their magic', 'tidy their home'];
-            return getRandomElement(activities);
-        }
-
-        function getRandomEmotion() {
-            const emotions = ['happy', 'loved', 'peaceful', 'joyful', 'safe', 'welcome', 'special'];
-            return getRandomElement(emotions);
-        }
-
-        function getRandomQuality() {
-            const qualities = ['kindness', 'wisdom', 'gentleness', 'curiosity', 'bravery', 'generosity', 'patience'];
-            return getRandomElement(qualities);
-        }
-
-        function getRandomSettingDetail(setting) {
-            const details = {
-                'enchanted forest': ['ancient trees whisper secrets', 'magical creatures play among the flowers', 'sunbeams dance through the leaves'],
-                'magical kingdom': ['castle towers touch the clouds', 'rainbow bridges span the valleys', 'gentle music fills the air'],
-                'cozy village': ['chimney smoke curls into the sky', 'flower boxes decorate every window', 'friendly neighbors wave hello'],
-                'underwater world': ['colorful coral gardens bloom', 'gentle currents carry happy songs', 'pearl bubbles float to the surface'],
-                'cloud city': ['fluffy pathways stretch endlessly', 'rainbow slides connect the levels', 'star dust sparkles everywhere'],
-                'secret garden': ['butterfly friends flutter about', 'sweet fragrances fill the air', 'dewdrops sparkle like diamonds'],
-                'magical treehouse': ['branches sway gently in the breeze', 'bird friends chirp good morning', 'leaves rustle with ancient wisdom'],
-                'happy farm': ['golden wheat fields wave hello', 'happy animals roam freely', 'the sunset paints the sky in warm colors']
-            };
-            return getRandomElement(details[setting] || ['magic fills the air', 'wonder awaits around every corner', 'happiness grows like flowers']);
-        }
-
-        function getRandomMagicalAbility() {
-            const abilities = ['talk to flowers', 'understand all languages', 'make plants grow with a touch', 'see the goodness in everyone\'s heart', 'grant small wishes', 'heal sadness with hugs'];
-            return getRandomElement(abilities);
-        }
-
-        function getRandomTimeOfDay() {
-            const times = ['sunny morning', 'peaceful afternoon', 'golden evening', 'starlit night', 'misty dawn'];
-            return getRandomElement(times);
-        }
-
-        function getRandomExploringActivity() {
-            const activities = ['following a butterfly', 'listening to bird songs', 'searching for four-leaf clovers', 'watching the clouds', 'collecting smooth stones', 'following a rainbow'];
-            return getRandomElement(activities);
-        }
-
-        function getRandomHidingPlace() {
-            const places = ['nestled among soft moss', 'hidden beneath rainbow petals', 'resting on a lily pad', 'tucked inside a hollow log', 'gleaming atop a mushroom', 'cradled in flower petals'];
-            return getRandomElement(places);
-        }
-
-        function getRandomMagicalProperty() {
-            const properties = ['glowed with warm light', 'hummed a gentle melody', 'sparkled like captured starlight', 'pulsed with a heartbeat of kindness', 'shimmered with rainbow colors', 'whispered words of encouragement'];
-            return getRandomElement(properties);
-        }
-
-        function getRandomMagicalBehavior() {
-            const behaviors = ['pulse with gentle energy', 'float softly in the air', 'change colors like a sunset', 'emit tiny sparkles of joy', 'glow brighter with each kind thought', 'hum lullabies from long ago'];
-            return getRandomElement(behaviors);
-        }
-
-        function getRandomDailyActivity() {
-            const activities = ['tending to their garden', 'reading ancient stories', 'practicing their talents', 'helping their neighbors', 'preparing for the day', 'enjoying the peaceful morning'];
-            return getRandomElement(activities);
-        }
-
-        function getRandomSound() {
-            const sounds = ['gentle tinkling', 'soft humming', 'melodic whisper', 'happy giggling', 'peaceful chiming', 'magical singing'];
-            return getRandomElement(sounds);
-        }
-
-        function getRandomTitleElement() {
-            const elements = ['Secret', 'Magic', 'Mystery', 'Wonder', 'Adventure', 'Journey', 'Gift', 'Treasure', 'Miracle', 'Dream'];
-            return getRandomElement(elements);
-        }
-
-        function generateMagicalMoment(character, element) {
-            const moments = [
-                `The moment the ${character} touched the ${element}, it began to glow with warmth. "Hello, kind soul," whispered a gentle voice. "I have been waiting for someone with a heart like yours."`,
-                `As soon as the ${character} picked up the ${element}, the world around them seemed brighter. Flowers bloomed more colorfully, and a soft melody filled the air. The ${element} had chosen them for something special.`,
-                `The ${element} felt warm and alive in the ${character}'s gentle hands. Suddenly, they could understand the language of all living things - the trees, the flowers, even the busy ants had stories to tell.`,
-                `When the ${character} held the ${element} close to their heart, it pulsed with a rhythm that matched their own. They felt a surge of love and understanding flow through them, connecting them to all life in their world.`
-            ];
-            return getRandomElement(moments);
-        }
-
-        function generateChallenge(character, setting, theme) {
-            const challenges = [
-                `As the ${character} explored the ${setting} with their new magical gift, they heard crying in the distance. A small creature was lost and frightened, needing someone to show them ${theme}.`,
-                `The peaceful ${setting} was troubled that day. Some of the animals had forgotten how important ${theme} was, and sadness had begun to spread like grey clouds.`,
-                `While walking through the ${setting}, the ${character} discovered that the magic there was fading. The only way to restore it was through acts of genuine ${theme}.`,
-                `A gentle storm had scattered many of the smaller creatures throughout the ${setting}. They needed someone brave and kind to help them find their way back to safety and teach them about ${theme}.`
-            ];
-            return getRandomElement(challenges);
-        }
-
-        function generateFriendMeeting(character, setting) {
-            const meetings = [
-                `Soon, the ${character} met a group of friendly animals who lived in the ${setting}. There was a wise old turtle, a playful squirrel, and a gentle deer. They had all heard about the ${character}'s kind heart.`,
-                `Word of the ${character}'s kindness spread quickly through the ${setting}. Before long, creatures great and small came to meet this special friend who brought joy wherever they went.`,
-                `As the ${character} continued their journey, they were joined by other kind souls from the ${setting} - each one eager to help and learn from their new friend's gentle wisdom.`,
-                `The magic of the ${character}'s presence drew together all the good-hearted beings in the ${setting}. Together, they formed a circle of friendship that would make their world brighter.`
-            ];
-            return getRandomElement(meetings);
-        }
-
-        function generateHelpingScene(character, element, theme) {
-            const scenes = [
-                `Using the power of the ${element}, the ${character} and their friends worked together to help everyone in need. With each act of ${theme}, the magical object glowed brighter and their hearts felt fuller.`,
-                `The ${character} showed their new friends how the ${element} worked best when they all practiced ${theme} together. Soon, the entire area was filled with laughter, joy, and the warm glow of caring hearts.`,
-                `Through patient teaching and gentle example, the ${character} helped everyone understand the true power of ${theme}. The ${element} sparkled with approval as kindness spread from heart to heart.`,
-                `One by one, the ${character} and their friends used the ${element}'s magic to solve each problem they encountered. Every act of ${theme} made their community stronger and happier.`
-            ];
-            return getRandomElement(scenes);
-        }
-
-        function generateLessonScene(character, lesson, theme) {
-            const scenes = [
-                `As the day progressed, everyone in the community learned an important truth: ${lesson}. The ${character} smiled as they watched their friends practice this wisdom with joy.`,
-                `Through their adventures together, all the creatures discovered that ${lesson}. The ${character} felt proud to see how ${theme} had transformed their entire world.`,
-                `The wise ${character} gathered everyone together and shared the most important lesson of all: ${lesson}. Everyone nodded in understanding, feeling the truth of these words in their hearts.`,
-                `By the end of their magical day, every creature in the land understood that ${lesson}. The ${character} had helped them all discover the power of ${theme}.`
-            ];
-            return getRandomElement(scenes);
-        }
-
-        function generateCelebration(character, setting) {
-            const celebrations = [
-                `That evening, all the creatures of the ${setting} gathered to celebrate their new understanding. They sang songs, shared stories, and danced under the twinkling stars, with the ${character} at the center of it all.`,
-                `The entire ${setting} came alive with celebration. Flowers bloomed brighter, streams babbled happier songs, and even the stars seemed to twinkle with extra joy, all thanks to the ${character}'s kindness.`,
-                `As word spread throughout the ${setting}, creatures from far and wide came to thank the ${character}. The celebration lasted until the moon was high, filled with gratitude and new friendships.`,
-                `The magic in the ${setting} was stronger than ever before. Everyone celebrated by sharing their favorite foods, playing gentle games, and promising to remember the ${character}'s wonderful example.`
-            ];
-            return getRandomElement(celebrations);
-        }
-
-        function generateWisdom(character, element, theme) {
-            const wisdom = [
-                `As the celebration wound down, the ${character} carefully placed the ${element} back where they had found it. "The real magic," they explained, "was inside all of us from the beginning. The ${element} just helped us remember."`,
-                `The ${character} looked at their new friends with a warm smile. "This ${element} taught us something special today," they said. "True magic happens when we choose ${theme} in everything we do."`,
-                `Before saying goodnight, the ${character} shared their most important discovery: "The ${element} was wonderful, but the greatest magic comes from the love we share with each other."`,
-                `The wise ${character} knew that their time with the ${element} had taught everyone something precious. "We don't need magic objects to be special," they said. "Our kind hearts are magic enough."`
-            ];
-            return getRandomElement(wisdom);
-        }
-
-        function generateEnding(character, setting) {
-            const endings = [
-                `That night, as all the creatures of the ${setting} drifted off to peaceful sleep, they dreamed of their dear friend the ${character}. In their dreams, kindness continued to spread like warm sunlight, touching every corner of their magical world. The end. Sweet dreams! 🌙✨`,
-                `As the stars came out to light the ${setting}, the ${character} tucked all their new friends safely into their homes. Everyone fell asleep with happy hearts, knowing that tomorrow would bring new chances to spread joy. The end. Sleep tight! 🌙✨`,
-                `The ${character} looked up at the peaceful night sky above the ${setting} and felt grateful for the wonderful day. All around them, their friends slept soundly, dreaming of kindness and friendship. The end. Have the sweetest dreams! 🌙✨`,
-                `With hearts full of love and minds full of wonderful memories, everyone in the ${setting} settled down for the night. The ${character}'s lesson would live on in their dreams and in their daily lives. The end. Good night! 🌙✨`
-            ];
-            return getRandomElement(endings);
         }
 
         function capitalize(str) {
@@ -1610,9 +1134,7 @@ Story:`;
                 `${character} meeting small forest animals in ${setting}, children's book art, cute animals, friendship scene, pastoral`,
                 `${character} using magic to help lost animals, children's illustration, glowing magical effects, caring and helpful scene`,
                 `${character} surrounded by happy animals in ${setting}, children's storybook style, celebration scene, joyful atmosphere`,
-                `group celebration in magical ${setting} with ${character}, children's book art, festive and happy, community gathering`,
-                `wise ${character} sharing wisdom in ${setting}, children's illustration, peaceful evening scene, storytelling moment`,
-                `peaceful nighttime scene in ${setting} with sleeping ${character}, children's book art, stars and moon, dreamy bedtime scene`
+                `group celebration in magical ${setting} with ${character}, children's book art, festive and happy, community gathering`
             ];
             
             return prompts[pageIndex] || `cute ${character} in magical ${setting}, children's book illustration style`;
