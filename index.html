@@ -776,6 +776,7 @@
     </div>
 
     <script>
+    <script>
         function createStory() {
             console.log('Creating story...');
             
@@ -817,7 +818,6 @@
 
         function tryAIStory(character, setting, themes, element, lesson) {
             return new Promise((resolve, reject) => {
-                // Create a detailed prompt for better AI stories
                 const prompt = `Write a gentle bedtime story for children ages 2-5.
 
 Story Requirements:
@@ -833,7 +833,6 @@ Story:`;
 
                 console.log('Trying AI with prompt:', prompt);
 
-                // Try a simple, reliable AI service
                 fetch('https://api-inference.huggingface.co/models/gpt2', {
                     method: 'POST',
                     headers: {
@@ -862,7 +861,6 @@ Story:`;
                     if (result && result[0] && result[0].generated_text) {
                         const generatedText = result[0].generated_text.trim();
                         if (generatedText.length > 200) {
-                            // Parse the AI text into story format
                             const story = parseAIResponse(generatedText, character, setting);
                             resolve(story);
                         } else {
@@ -877,7 +875,6 @@ Story:`;
                     reject(error);
                 });
 
-                // Timeout after 15 seconds
                 setTimeout(() => {
                     reject(new Error('AI timeout'));
                 }, 15000);
@@ -885,13 +882,10 @@ Story:`;
         }
 
         function parseAIResponse(aiText, character, setting) {
-            // Clean up the AI response
             let cleanText = aiText.replace(/^.*Story:\s*/i, '').trim();
             
-            // Split into paragraphs
             let paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 20);
             
-            // If not enough paragraphs, try different splitting
             if (paragraphs.length < 6) {
                 const sentences = cleanText.split(/\.\s+/);
                 paragraphs = [];
@@ -904,17 +898,14 @@ Story:`;
                 }
             }
             
-            // Ensure we have 8 paragraphs
             if (paragraphs.length > 8) {
                 paragraphs = paragraphs.slice(0, 8);
             } else if (paragraphs.length < 8) {
-                // Pad with additional content if needed
                 while (paragraphs.length < 8) {
                     paragraphs.push(`The ${character} continued their magical adventure in the ${setting}, spreading joy and wonder wherever they went.`);
                 }
             }
             
-            // Clean up paragraphs
             const storyPages = paragraphs.map(p => {
                 let cleaned = p.trim();
                 if (!cleaned.endsWith('.') && !cleaned.endsWith('!') && !cleaned.endsWith('?')) {
@@ -934,7 +925,6 @@ Story:`;
         function createLocalStory(character, setting, themes, element, lesson) {
             console.log('Creating local story with:', { character, setting, themes, element, lesson });
             
-            // Create a more personalized story based on the form inputs
             const characterName = getCharacterName(character);
             const settingDesc = getSettingDescription(setting);
             const themesList = themes.split(',').map(t => t.trim());
@@ -992,6 +982,191 @@ Story:`;
                 word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ');
         }
+
+        let currentStory = null;
+        let currentPageIndex = 0;
+        let totalPages = 0;
+
+        function displayStory(story) {
+            document.getElementById('storyContent').innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <h3 style="color: #5a67d8; margin-bottom: 20px;">📖 Your Story is Ready!</h3>
+                    <p style="font-size: 1.1em; margin-bottom: 20px;">Click the button below to open your magical storybook!</p>
+                    <button onclick="openStoryBook()" style="
+                        background: linear-gradient(135deg, #ff6b6b, #ffa500);
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 25px;
+                        cursor: pointer;
+                        font-size: 1.2em;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-top: 15px;
+                        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(255, 107, 107, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(255, 107, 107, 0.3)'">
+                        ✨ Open Story Book ✨
+                    </button>
+                </div>
+            `;
+            currentStory = story;
+        }
+
+        function openStoryBook() {
+            if (!currentStory) return;
+            createBookPages(currentStory);
+            document.getElementById('bookMode').classList.add('active');
+            currentPageIndex = 0;
+            totalPages = currentStory.pages.length + 1;
+            updateBookNavigation();
+            showBookPage(0);
+            document.addEventListener('keydown', handleBookKeyboard);
+        }
+
+        function createBookPages(story) {
+            const bookPages = document.getElementById('bookPages');
+            bookPages.innerHTML = '';
+            
+            const coverPage = document.createElement('div');
+            coverPage.className = 'book-page cover-page';
+            coverPage.dataset.page = '0';
+            coverPage.innerHTML = `
+                <div class="page-content">
+                    <div class="cover-decoration">📚</div>
+                    <h1 class="cover-title">${story.title}</h1>
+                    <p class="cover-subtitle">A Magical Bedtime Story</p>
+                    <div class="cover-decoration">✨🌙✨</div>
+                </div>
+            `;
+            bookPages.appendChild(coverPage);
+            
+            story.pages.forEach((pageText, index) => {
+                const page = document.createElement('div');
+                page.className = 'book-page';
+                page.dataset.page = index + 1;
+                
+                const imageUrl = generateImageUrl(story.character, story.setting, index);
+                
+                page.innerHTML = `
+                    <div class="page-content">
+                        <div class="page-text">${pageText}</div>
+                        <img src="${imageUrl}" alt="Story illustration for page ${index + 1}" class="page-illustration" loading="lazy">
+                    </div>
+                    <div class="page-number">Page ${index + 1}</div>
+                `;
+                bookPages.appendChild(page);
+            });
+        }
+
+        function generateImageUrl(character, setting, pageIndex) {
+            const prompts = [
+                `cute cartoon ${character} in ${setting}, children's book illustration`,
+                `${character} helping animals in ${setting}, friendly scene`,
+                `magical ${character} with glowing crystal, bright colors`,
+                `${character} flying through ${setting}, adventure scene`,
+                `${character} meeting baby animals, heartwarming scene`,
+                `${character} guiding lost animals, caring scene`,
+                `happy animals with ${character}, celebration scene`,
+                `peaceful ${setting} at night with ${character}, bedtime scene`
+            ];
+            
+            const prompt = prompts[pageIndex] || `cute ${character} in ${setting}`;
+            const cleanPrompt = encodeURIComponent(`${prompt}, children's book illustration, cartoon style, bright colors, friendly, safe for kids`);
+            const negativePrompt = encodeURIComponent("scary, dark, violent, realistic, inappropriate");
+            const seed = Math.floor(Math.random() * 10000);
+            
+            return `https://image.pollinations.ai/prompt/${cleanPrompt}?negative=${negativePrompt}&width=280&height=200&seed=${seed}&model=flux&enhance=true`;
+        }
+
+        function showBookPage(pageIndex) {
+            document.querySelectorAll('.book-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            const currentPage = document.querySelector(`[data-page="${pageIndex}"]`);
+            if (currentPage) {
+                currentPage.classList.add('active');
+                playPageSound();
+            }
+            
+            updateBookNavigation();
+            updateProgress();
+        }
+
+        function updateBookNavigation() {
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            prevBtn.disabled = currentPageIndex === 0;
+            nextBtn.disabled = currentPageIndex === totalPages - 1;
+        }
+
+        function updateProgress() {
+            const progress = (currentPageIndex / (totalPages - 1)) * 100;
+            document.getElementById('bookProgress').style.width = `${progress}%`;
+        }
+
+        function nextPage() {
+            if (currentPageIndex < totalPages - 1) {
+                currentPageIndex++;
+                showBookPage(currentPageIndex);
+            }
+        }
+
+        function previousPage() {
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                showBookPage(currentPageIndex);
+            }
+        }
+
+        function closeBook() {
+            document.getElementById('bookMode').classList.remove('active');
+            document.removeEventListener('keydown', handleBookKeyboard);
+        }
+
+        function handleBookKeyboard(e) {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                    e.preventDefault();
+                    nextPage();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    previousPage();
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    closeBook();
+                    break;
+            }
+        }
+
+        function playPageSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch(e) {
+                // Audio not supported
+            }
+        }
+    </script>
                     setting: "whispering woods"
                 };
                 
