@@ -260,16 +260,16 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #FFFEF7 0%, #F7F5E6 100%);
+            background: linear-gradient(135deg, #FEFEFE 0%, #F9F9F9 100%);
             border-radius: 12px;
             padding: 50px;
             display: none;
             flex-direction: column;
             overflow-y: auto;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.08);
             background-image: 
-                linear-gradient(90deg, rgba(255,0,0,0.05) 50%, transparent 50%),
-                linear-gradient(rgba(0,0,255,0.05) 50%, transparent 50%);
+                linear-gradient(90deg, rgba(200,200,255,0.03) 50%, transparent 50%),
+                linear-gradient(rgba(200,255,200,0.03) 50%, transparent 50%);
             background-size: 40px 40px;
         }
 
@@ -863,21 +863,116 @@
         }
 
         function createStoryPrompt(character, setting, themes, element, lesson) {
-            return `Write a magical bedtime story for children ages 2-5. The story should be gentle, positive, and educational.
+            // Generate random creative elements for uniqueness
+            const storyStyle = getRandomElement([
+                'adventure story with unexpected twists',
+                'gentle mystery that unfolds slowly',
+                'heartwarming tale of discovery',
+                'magical journey with meaningful encounters',
+                'whimsical story full of wonder',
+                'cozy tale with delightful surprises',
+                'enchanting story with talking objects',
+                'uplifting adventure about overcoming challenges'
+            ]);
 
-Story Requirements:
-- Main character: ${character}
-- Setting: ${setting}
-- Themes: ${themes}
+            const narrativeVoice = getRandomElement([
+                'warm and conversational, like a grandparent telling a story',
+                'playful and energetic, with lots of descriptive details',
+                'gentle and soothing, perfect for bedtime',
+                'curious and wondering, asking gentle questions',
+                'wise and thoughtful, with deeper meanings',
+                'cheerful and optimistic, celebrating small joys'
+            ]);
+
+            const uniqueElements = getRandomElement([
+                'Include at least 3 different magical creatures as supporting characters',
+                'Add sensory details - what things smell, sound, feel, and look like',
+                'Include a gentle problem that requires creative thinking to solve',
+                'Add moments of humor and playfulness throughout',
+                'Include weather or seasonal elements that affect the story',
+                'Feature a special celebration or gathering'
+            ]);
+
+            const characterPersonality = generateCharacterPersonality(character);
+            const settingDetails = generateSettingDetails(setting);
+            const plotStructure = getRandomElement([
+                'Start with the character facing a small challenge, then show their journey to overcome it',
+                'Begin with the character helping someone else, leading to a bigger adventure',
+                'Open with the character discovering something mysterious, then exploring what it means',
+                'Start with an ordinary day that becomes extraordinary through small magical moments',
+                'Begin with the character meeting a new friend and learning from each other'
+            ]);
+
+            return `You are a master children's storyteller creating a unique bedtime story. Make this story completely different from typical fairy tales.
+
+STORY REQUIREMENTS:
+- Main Character: ${character} (${characterPersonality})
+- Setting: ${setting} (${settingDetails})
+- Themes to weave throughout: ${themes}
 - Special magical element: ${element}
-- Lesson to teach: ${lesson}
-- Length: Exactly 10 short paragraphs
-- Style: Simple, warm, and suitable for bedtime
-- Tone: Gentle, magical, and reassuring
+- Important lesson: ${lesson}
+- Story Style: ${storyStyle}
+- Narrative Voice: ${narrativeVoice}
+- Unique Elements: ${uniqueElements}
+- Plot Structure: ${plotStructure}
 
-Please write the story with clear paragraph breaks. Each paragraph should be 2-3 sentences suitable for young children.
+CREATIVE GUIDELINES:
+- Write exactly 10 paragraphs, each 3-4 sentences long
+- Use vivid, child-friendly imagery and metaphors
+- Include dialogue from characters (use "quotes")
+- Vary sentence structure - some short, some longer
+- Add specific details that make this story unique (unusual colors, interesting sounds, special textures)
+- Include emotional moments - joy, wonder, gentle challenges, triumph
+- Make the ${element} central to the plot, not just mentioned
+- Show don't tell - let actions demonstrate the lesson
+- End with a satisfying, peaceful conclusion perfect for bedtime
+- Avoid clichéd phrases like "once upon a time" - be original!
+
+TONE: Magical yet grounded, imaginative yet believable, gentle yet engaging
+
+Create a story that feels completely fresh and different. Surprise me with unexpected details and creative solutions!
 
 Story:`;
+        }
+
+        function generateCharacterPersonality(character) {
+            const personalities = {
+                'friendly dragon': getRandomElement(['loves collecting shiny pebbles and making music with them', 'enjoys baking cloud cookies for friends', 'has a talent for growing rainbow flowers']),
+                'baby dragon': getRandomElement(['is learning to fly and sometimes hiccups sparkles', 'loves bedtime stories and warm milk', 'enjoys playing hide-and-seek in flower petals']),
+                'rainbow dragon': getRandomElement(['paints the sky with different emotions each day', 'can only speak in colors until evening', 'leaves rainbow footprints wherever they walk']),
+                'magical unicorn': getRandomElement(['has a mane that changes with the seasons', 'can heal sadness with gentle touches', 'loves dancing in moonbeams']),
+                'flower fairy': getRandomElement(['speaks only through flower fragrances', 'makes tiny houses from acorn caps', 'can make plants grow by singing to them']),
+                'wise owl': getRandomElement(['collects stories in hollow trees', 'can see the good in everyone\'s heart', 'loves stargazing and making wishes']),
+                'friendly bear': getRandomElement(['gives the best warm hugs in the forest', 'makes honey tea for friends', 'knows every secret path through the woods']),
+                'singing bird': getRandomElement(['carries messages between the clouds', 'wakes up flowers with morning songs', 'can imitate any sound in nature']),
+                'kind princess': getRandomElement(['prefers gardening to wearing crowns', 'talks to animals and understands their worries', 'loves making toys for children']),
+                'magical fairy': getRandomElement(['specializes in fixing broken things with stardust', 'can shrink to ant-size or grow to tree-height', 'keeps a library of wishes in dewdrops'])
+            };
+            
+            return personalities[character] || getRandomElement([
+                'has a special talent for making others smile',
+                'loves helping those in need',
+                'enjoys discovering new things every day',
+                'has a heart full of kindness and wonder'
+            ]);
+        }
+
+        function generateSettingDetails(setting) {
+            const details = {
+                'enchanted forest': getRandomElement(['where the trees whisper ancient secrets and fireflies write stories in the air', 'filled with musical streams and flowers that glow different colors based on emotions', 'where each path leads to a different season and time moves like honey']),
+                'magical kingdom': getRandomElement(['where the castle is built from crystallized laughter and the gardens grow in spirals', 'with bridges made of hardened rainbows and fountains that sing lullabies', 'where the towers are libraries and every room tells a different story']),
+                'cloud city': getRandomElement(['where buildings are made of spun silver clouds and rain is always warm', 'with fluffy pathways that bounce and stars that serve as streetlights', 'where the weather changes based on the citizens\' moods']),
+                'secret garden': getRandomElement(['hidden behind a waterfall of liquid starlight', 'where every flower grants a small wish when treated with kindness', 'that only appears to those who truly need its magic']),
+                'underwater world': getRandomElement(['where coral sings in harmonies and fish paint with their scales', 'filled with gentle currents that carry whispered dreams', 'where sea glass windows show memories of the ocean']),
+                'magical treehouse': getRandomElement(['built in a tree so tall its branches touch different cloud kingdoms', 'with rooms that rearrange themselves based on what you need most', 'where the tree grows different fruits depending on the season of your heart']),
+                'crystal cave': getRandomElement(['where each crystal holds a different color of light and hums a unique melody', 'that grows new rooms whenever someone with a kind heart enters', 'where the walls show reflections of your happiest memories'])
+            };
+            
+            return details[setting] || getRandomElement([
+                'a place where magic feels as natural as breathing',
+                'somewhere that changes to reflect the kindness of its visitors',
+                'a location where ordinary things become extraordinary through love'
+            ]);
         }
 
         function parseAIStory(aiText, character, setting) {
