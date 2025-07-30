@@ -741,7 +741,7 @@
                         <textarea id="lesson" name="lesson" placeholder="e.g., It's important to be kind to others, or sharing makes everyone happy"></textarea>
                     </div>
 
-                    <button type="submit" class="generate-btn" onclick="console.log('Button clicked!'); return true;">✨ Create My Story ✨</button>
+                    <button type="button" class="generate-btn" onclick="directGenerateStory(); console.log('Onclick handler executed!');">✨ Create My Story ✨</button>
                 </form>
             </div>
 
@@ -845,12 +845,76 @@
             }
         });
 
-        // Backup event listener for form submission
-        document.getElementById('storyForm').addEventListener('submit', async function(e) {
-            console.log('Backup form listener triggered');
-            e.preventDefault();
-            directGenerateStory();
-        });
+        async function generateStory() {
+            const formData = new FormData(document.getElementById('storyForm'));
+            const mainCharacter = formData.get('mainCharacter') || 'friendly dragon';
+            const setting = formData.get('setting') || 'enchanted forest';
+            const specialElement = formData.get('specialElement') || 'magic star';
+            const lesson = formData.get('lesson') || 'being kind to others makes the world a better place';
+            
+            const themes = [];
+            document.querySelectorAll('input[name="themes"]:checked').forEach(checkbox => {
+                themes.push(checkbox.value);
+            });
+            const mainTheme = themes.length > 0 ? themes.join(', ') : 'friendship';
+
+            console.log('Starting story generation with:', { mainCharacter, setting, mainTheme, specialElement, lesson });
+
+            // Show loading state
+            document.getElementById('storyContent').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h3>✨ Creating your unique bedtime story... ✨</h3>
+                    <p>Our storyteller is crafting something special just for you!</p>
+                </div>
+            `;
+
+            try {
+                console.log('Attempting AI story generation...');
+                const story = await createAIStory(mainCharacter, setting, mainTheme, specialElement, lesson);
+                console.log('AI story created successfully:', story);
+                displayStory(story);
+            } catch (error) {
+                console.log('AI generation failed, creating unique local story:', error);
+                
+                // Create a unique story locally without templates
+                document.getElementById('storyContent').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <h3>✨ Creating your unique story locally... ✨</h3>
+                        <p>Our local storyteller is crafting something special!</p>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    try {
+                        console.log('Creating local story...');
+                        const story = createUniqueLocalStory(mainCharacter, setting, mainTheme, specialElement, lesson);
+                        console.log('Local story created successfully:', story);
+                        displayStory(story);
+                    } catch (localError) {
+                        console.error('Local story generation failed:', localError);
+                        // Show error if even local generation fails
+                        document.getElementById('storyContent').innerHTML = `
+                            <div style="text-align: center; padding: 50px;">
+                                <h3 style="color: #ff6b6b; margin-bottom: 20px;">😔 Something went wrong!</h3>
+                                <p style="font-size: 1.1em; margin-bottom: 20px;">Please try again or refresh the page.</p>
+                                <button onclick="generateStory()" style="
+                                    background: linear-gradient(135deg, #667eea, #764ba2);
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 24px;
+                                    border-radius: 20px;
+                                    cursor: pointer;
+                                    font-size: 1em;
+                                    margin-top: 15px;
+                                ">🔄 Try Again</button>
+                            </div>
+                        `;
+                    }
+                }, 1500);
+            }
+        }
 
         async function generateStory() {
             const formData = new FormData(document.getElementById('storyForm'));
