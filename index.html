@@ -845,7 +845,152 @@
             }
         });
 
-        async function generateStory() {
+        function createStoryPrompt(character, setting, themes, element, lesson) {
+            const storyMood = getRandomElement([
+                'gentle and cozy', 'playful and fun', 'magical and wonder-filled', 
+                'heartwarming and sweet', 'cheerful and bright'
+            ]);
+
+            return `Write a short bedtime story for young children (ages 2-5).
+
+Story details:
+- Main character: a ${character}
+- Setting: ${setting}  
+- Include: ${element}
+- Theme: ${themes}
+- Lesson: ${lesson}
+- Mood: ${storyMood}
+
+Requirements:
+- Write exactly 8 short paragraphs
+- Each paragraph should be 2-3 simple sentences
+- Use easy words for little children
+- Include some dialogue with "quotes"
+- Make it gentle and perfect for bedtime
+- Have a clear beginning, middle, and peaceful ending
+
+Start writing the story now:`;
+        }
+
+        async function createAIStory(character, setting, themes, element, lesson) {
+            const prompt = createStoryPrompt(character, setting, themes, element, lesson);
+            
+            // Try simple Hugging Face models first (most likely to work)
+            const models = [
+                "gpt2",
+                "distilgpt2"
+            ];
+            
+            for (const model of models) {
+                try {
+                    console.log(`Trying ${model}...`);
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                    
+                    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            inputs: prompt,
+                            parameters: {
+                                max_new_tokens: 500,
+                                temperature: 0.8,
+                                return_full_text: false
+                            }
+                        }),
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log(`${model} response:`, result);
+                        
+                        if (result && Array.isArray(result) && result[0] && result[0].generated_text) {
+                            const generatedText = result[0].generated_text;
+                            if (generatedText && generatedText.trim().length > 150) {
+                                console.log(`${model} success!`);
+                                return parseAIStory(generatedText, character, setting);
+                            }
+                        }
+                    } else {
+                        console.log(`${model} HTTP error:`, response.status);
+                    }
+                } catch (error) {
+                    console.log(`${model} failed:`, error.message);
+                }
+            }
+            
+            throw new Error('All AI models failed');
+        }
+
+        function parseAIStory(aiText, character, setting) {
+            let cleanText = aiText.trim();
+            
+            // Clean up the AI text
+            cleanText = cleanText.replace(/^.*Write a complete.*story now:\s*/i, '');
+            cleanText = cleanText.replace(/^Story:\s*/i, '');
+            cleanText = cleanText.replace(/^Start writing the story now:\s*/i, '');
+            
+            // Split into paragraphs more intelligently
+            let paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 20);
+            
+            // If we don't have enough, try different splitting
+            if (paragraphs.length < 6) {
+                paragraphs = cleanText.split(/\.\s+/).filter(p => p.trim().length > 40);
+                // Rejoin sentences that belong together
+                const betterParagraphs = [];
+                for (let i = 0; i < paragraphs.length; i += 2) {
+                    if (paragraphs[i + 1]) {
+                        betterParagraphs.push(paragraphs[i] + '. ' + paragraphs[i + 1] + '.');
+                    } else {
+                        betterParagraphs.push(paragraphs[i] + '.');
+                    }
+                }
+                paragraphs = betterParagraphs;
+            }
+            
+            // Ensure we have 8 paragraphs for consistency
+            while (paragraphs.length < 8 && paragraphs.length > 0) {
+                // Split longer paragraphs
+                const longest = paragraphs.reduce((a, b) => a.length > b.length ? a : b);
+                const idx = paragraphs.indexOf(longest);
+                const sentences = longest.split('. ');
+                if (sentences.length > 1) {
+                    paragraphs[idx] = sentences.slice(0, Math.ceil(sentences.length/2)).join('. ') + '.';
+                    paragraphs.splice(idx + 1, 0, sentences.slice(Math.ceil(sentences.length/2)).join('. '));
+                } else {
+                    break;
+                }
+            }
+            
+            // Take first 8 paragraphs and clean them
+            const storyPages = paragraphs.slice(0, 8).map(p => {
+                let cleaned = p.trim();
+                if (!cleaned.endsWith('.') && !cleaned.endsWith('!') && !cleaned.endsWith('?')) {
+                    cleaned += '.';
+                }
+                return cleaned;
+            });
+            
+            // Generate a creative title
+            const titleWords = [
+                'Adventure', 'Journey', 'Secret', 'Magic', 'Wonder', 'Dream', 
+                'Mystery', 'Tale', 'Story', 'Quest', 'Discovery', 'Gift'
+            ];
+            const title = `The ${capitalize(character)}'s ${getRandomElement(titleWords)}`;
+            
+            return {
+                title: title,
+                pages: storyPages,
+                character: character,
+                setting: setting
+            };
+        }
             const formData = new FormData(document.getElementById('storyForm'));
             const mainCharacter = formData.get('mainCharacter') || 'friendly dragon';
             const setting = formData.get('setting') || 'enchanted forest';
