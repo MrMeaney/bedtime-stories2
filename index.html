@@ -741,7 +741,7 @@
                         <textarea id="lesson" name="lesson" placeholder="e.g., It's important to be kind to others, or sharing makes everyone happy"></textarea>
                     </div>
 
-                    <button type="submit" class="generate-btn">✨ Create My Story ✨</button>
+                    <button type="submit" class="generate-btn" onclick="console.log('Button clicked!'); return true;">✨ Create My Story ✨</button>
                 </form>
             </div>
 
@@ -777,35 +777,79 @@
     </div>
 
     <script>
+        // Simple direct function for immediate testing
+        function directGenerateStory() {
+            console.log('Direct function called!');
+            
+            document.getElementById('storyContent').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h3>✨ Creating your story... ✨</h3>
+                    <p>Working on it!</p>
+                </div>
+            `;
+            
+            // Create local story immediately
+            setTimeout(() => {
+                const story = {
+                    title: "Test Story",
+                    pages: [
+                        "Once there was a friendly dragon named Sparkle.",
+                        "Sparkle lived in an enchanted forest full of wonder.",
+                        "One day, Sparkle found a magical star that glowed brightly.",
+                        "The star taught Sparkle about the power of kindness.",
+                        "Sparkle shared this lesson with all the forest animals.",
+                        "Everyone learned to be kind to each other.",
+                        "The forest became even more magical than before.",
+                        "And they all lived happily ever after. Sweet dreams! 🌙✨"
+                    ],
+                    character: "friendly dragon",
+                    setting: "enchanted forest"
+                };
+                
+                displayStory(story);
+            }, 2000);
+        }
+
         let currentStory = null;
         let currentPageIndex = 0;
         let totalPages = 0;
 
-        document.getElementById('storyForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log('Form submitted, starting story generation...');
+        // Add both event listeners to be sure
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up event listeners...');
             
-            try {
-                await generateStory();
-            } catch (error) {
-                console.error('Story generation completely failed:', error);
-                document.getElementById('storyContent').innerHTML = `
-                    <div style="text-align: center; padding: 50px;">
-                        <h3 style="color: #ff6b6b; margin-bottom: 20px;">😔 Something went wrong!</h3>
-                        <p style="font-size: 1.1em; margin-bottom: 20px;">Please try again or refresh the page.</p>
-                        <button onclick="location.reload()" style="
-                            background: linear-gradient(135deg, #667eea, #764ba2);
-                            color: white;
-                            border: none;
-                            padding: 12px 24px;
-                            border-radius: 20px;
-                            cursor: pointer;
-                            font-size: 1em;
-                            margin-top: 15px;
-                        ">🔄 Refresh Page</button>
-                    </div>
-                `;
+            const form = document.getElementById('storyForm');
+            const button = document.querySelector('.generate-btn');
+            
+            if (form) {
+                console.log('Form found, adding submit listener');
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submit event triggered');
+                    e.preventDefault();
+                    directGenerateStory();
+                });
+            } else {
+                console.log('Form not found!');
             }
+            
+            if (button) {
+                console.log('Button found, adding click listener');
+                button.addEventListener('click', function(e) {
+                    console.log('Button click event triggered');
+                    e.preventDefault();
+                    directGenerateStory();
+                });
+            } else {
+                console.log('Button not found!');
+            }
+        });
+
+        // Backup event listener for form submission
+        document.getElementById('storyForm').addEventListener('submit', async function(e) {
+            console.log('Backup form listener triggered');
+            e.preventDefault();
+            directGenerateStory();
         });
 
         async function generateStory() {
