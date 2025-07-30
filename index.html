@@ -779,28 +779,219 @@
         function createStory() {
             console.log('Creating story...');
             
+            // Get form data
+            const formData = new FormData(document.getElementById('storyForm'));
+            const character = formData.get('mainCharacter') || 'rainbow dragon';
+            const setting = formData.get('setting') || 'whispering woods';
+            const element = formData.get('specialElement') || 'magic crystal';
+            const lesson = formData.get('lesson') || 'helping others brings the greatest joy';
+            
+            const themes = [];
+            document.querySelectorAll('input[name="themes"]:checked').forEach(checkbox => {
+                themes.push(checkbox.value);
+            });
+            const selectedThemes = themes.length > 0 ? themes.join(', ') : 'friendship';
+            
+            console.log('Story parameters:', { character, setting, element, lesson, selectedThemes });
+            
             document.getElementById('storyContent').innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <h3>✨ Creating your magical story... ✨</h3>
-                    <p>Working on it!</p>
+                    <h3>✨ Creating your unique magical story... ✨</h3>
+                    <p>Our AI storyteller is working on something special!</p>
                 </div>
             `;
             
-            setTimeout(() => {
-                const story = {
-                    title: "The Rainbow Dragon's Adventure",
-                    pages: [
-                        "Once there was a beautiful rainbow dragon named Sparkle who lived in the whispering woods.",
-                        "Sparkle loved to help all the forest animals and make them smile with her colorful scales.",
-                        "One sunny morning, Sparkle found a magical crystal that glowed with warm, golden light.",
-                        "The crystal whispered to her about a group of lost baby animals who couldn't find their way home.",
-                        "Sparkle flew through the forest, using her rainbow colors to light up the dark paths.",
-                        "She found three little rabbits, a baby owl, and a tiny squirrel all huddled together, scared and cold.",
-                        "Using her magic crystal and kind heart, Sparkle guided each baby animal back to their families.",
-                        "That night, all the forest families gathered to thank Sparkle, and they all learned that helping others brings the greatest joy. Sweet dreams! 🌙✨"
-                    ],
-                    character: "rainbow dragon",
+            // Try AI first, then fallback
+            tryAIStory(character, setting, selectedThemes, element, lesson)
+                .then(story => {
+                    console.log('AI story created successfully!');
+                    displayStory(story);
+                })
+                .catch(error => {
+                    console.log('AI failed, creating local story:', error);
+                    const fallbackStory = createLocalStory(character, setting, selectedThemes, element, lesson);
+                    displayStory(fallbackStory);
+                });
+        }
+
+        function tryAIStory(character, setting, themes, element, lesson) {
+            return new Promise((resolve, reject) => {
+                // Create a detailed prompt for better AI stories
+                const prompt = `Write a gentle bedtime story for children ages 2-5.
+
+Story Requirements:
+- Main character: ${character}
+- Setting: ${setting}
+- Themes: ${themes}
+- Special item: ${element}
+- Lesson: ${lesson}
+
+Please write exactly 8 short paragraphs. Each paragraph should be 2-3 sentences. Use simple words that young children can understand. Make it magical and gentle, perfect for bedtime.
+
+Story:`;
+
+                console.log('Trying AI with prompt:', prompt);
+
+                // Try a simple, reliable AI service
+                fetch('https://api-inference.huggingface.co/models/gpt2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        inputs: prompt,
+                        parameters: {
+                            max_new_tokens: 500,
+                            temperature: 0.8,
+                            return_full_text: false,
+                            do_sample: true
+                        }
+                    })
+                })
+                .then(response => {
+                    console.log('AI response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('AI result:', result);
+                    
+                    if (result && result[0] && result[0].generated_text) {
+                        const generatedText = result[0].generated_text.trim();
+                        if (generatedText.length > 200) {
+                            // Parse the AI text into story format
+                            const story = parseAIResponse(generatedText, character, setting);
+                            resolve(story);
+                        } else {
+                            throw new Error('AI response too short');
+                        }
+                    } else {
+                        throw new Error('Invalid AI response format');
+                    }
+                })
+                .catch(error => {
+                    console.log('AI attempt failed:', error);
+                    reject(error);
+                });
+
+                // Timeout after 15 seconds
+                setTimeout(() => {
+                    reject(new Error('AI timeout'));
+                }, 15000);
+            });
+        }
+
+        function parseAIResponse(aiText, character, setting) {
+            // Clean up the AI response
+            let cleanText = aiText.replace(/^.*Story:\s*/i, '').trim();
+            
+            // Split into paragraphs
+            let paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 20);
+            
+            // If not enough paragraphs, try different splitting
+            if (paragraphs.length < 6) {
+                const sentences = cleanText.split(/\.\s+/);
+                paragraphs = [];
+                for (let i = 0; i < sentences.length; i += 2) {
+                    if (sentences[i] && sentences[i + 1]) {
+                        paragraphs.push(sentences[i] + '. ' + sentences[i + 1] + '.');
+                    } else if (sentences[i]) {
+                        paragraphs.push(sentences[i] + '.');
+                    }
+                }
+            }
+            
+            // Ensure we have 8 paragraphs
+            if (paragraphs.length > 8) {
+                paragraphs = paragraphs.slice(0, 8);
+            } else if (paragraphs.length < 8) {
+                // Pad with additional content if needed
+                while (paragraphs.length < 8) {
+                    paragraphs.push(`The ${character} continued their magical adventure in the ${setting}, spreading joy and wonder wherever they went.`);
+                }
+            }
+            
+            // Clean up paragraphs
+            const storyPages = paragraphs.map(p => {
+                let cleaned = p.trim();
+                if (!cleaned.endsWith('.') && !cleaned.endsWith('!') && !cleaned.endsWith('?')) {
+                    cleaned += '.';
+                }
+                return cleaned;
+            });
+            
+            return {
+                title: `The ${capitalize(character)}'s Adventure`,
+                pages: storyPages,
+                character: character,
+                setting: setting
+            };
+        }
+
+        function createLocalStory(character, setting, themes, element, lesson) {
+            console.log('Creating local story with:', { character, setting, themes, element, lesson });
+            
+            // Create a more personalized story based on the form inputs
+            const characterName = getCharacterName(character);
+            const settingDesc = getSettingDescription(setting);
+            const themesList = themes.split(',').map(t => t.trim());
+            const mainTheme = themesList[0] || 'friendship';
+            
+            const pages = [
+                `Once there was a wonderful ${character} named ${characterName} who lived in the ${settingDesc}.`,
+                `${characterName} was known throughout the land for being very good at ${mainTheme} and always helping others.`,
+                `One special day, ${characterName} discovered a magical ${element} that sparkled with beautiful colors.`,
+                `The ${element} whispered to ${characterName} about someone who needed help nearby.`,
+                `${characterName} used the power of ${mainTheme} and the magic ${element} to help solve the problem.`,
+                `All the creatures in the ${setting} were so grateful for ${characterName}'s kindness and wisdom.`,
+                `Everyone learned an important lesson that day: ${lesson}.`,
+                `That night, ${characterName} and all their friends went to sleep happy, knowing that ${mainTheme} makes the world a better place. Sweet dreams! 🌙✨`
+            ];
+            
+            return {
+                title: `${characterName} and the Magic ${capitalize(element)}`,
+                pages: pages,
+                character: character,
+                setting: setting
+            };
+        }
+
+        function getCharacterName(character) {
+            const names = {
+                'rainbow dragon': 'Sparkle',
+                'baby dragon': 'Little Flame',
+                'friendly dragon': 'Sunny',
+                'magical fairy': 'Luna',
+                'flower fairy': 'Blossom',
+                'wise owl': 'Hoot',
+                'playful puppy': 'Buddy',
+                'curious kitten': 'Whiskers',
+                'kind princess': 'Grace',
+                'brave knight': 'Noble'
+            };
+            return names[character] || 'Star';
+        }
+
+        function getSettingDescription(setting) {
+            const descriptions = {
+                'whispering woods': 'magical whispering woods where the trees shared secrets',
+                'enchanted forest': 'enchanted forest full of wonder and magic',
+                'secret garden': 'secret garden where flowers sang sweet songs',
+                'magical kingdom': 'magical kingdom with rainbow bridges',
+                'cloud city': 'city made of soft, fluffy clouds',
+                'fairy castle': 'beautiful fairy castle that sparkled in the sunlight'
+            };
+            return descriptions[setting] || `magical ${setting}`;
+        }
+
+        function capitalize(str) {
+            return str.split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
                     setting: "whispering woods"
                 };
                 
