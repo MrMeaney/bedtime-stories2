@@ -260,16 +260,16 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #FEFEFE 0%, #F9F9F9 100%);
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
             border-radius: 12px;
             padding: 50px;
             display: none;
             flex-direction: column;
             overflow-y: auto;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.08);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
             background-image: 
-                linear-gradient(90deg, rgba(200,200,255,0.03) 50%, transparent 50%),
-                linear-gradient(rgba(200,255,200,0.03) 50%, transparent 50%);
+                linear-gradient(90deg, rgba(240,240,255,0.02) 50%, transparent 50%),
+                linear-gradient(rgba(240,255,240,0.02) 50%, transparent 50%);
             background-size: 40px 40px;
         }
 
@@ -895,15 +895,47 @@
 
             const characterPersonality = generateCharacterPersonality(character);
             const settingDetails = generateSettingDetails(setting);
-            const plotStructure = getRandomElement([
-                'Start with the character facing a small challenge, then show their journey to overcome it',
-                'Begin with the character helping someone else, leading to a bigger adventure',
-                'Open with the character discovering something mysterious, then exploring what it means',
-                'Start with an ordinary day that becomes extraordinary through small magical moments',
-                'Begin with the character meeting a new friend and learning from each other'
+
+            // Force completely different story openings
+            const storyOpening = getRandomElement([
+                `Start with ${character} in the middle of doing something unusual (like painting with moonbeams or having a tea party with clouds)`,
+                `Begin with ${character} waking up to find something completely different about their world`,
+                `Open with ${character} receiving a mysterious invitation or message`,
+                `Start with ${character} overhearing a conversation between two unlikely creatures`,
+                `Begin with ${character} following a strange sound, smell, or light`,
+                `Open with ${character} finding that their favorite place has magically changed overnight`,
+                `Start with ${character} trying to solve a puzzle or riddle they discovered`,
+                `Begin with ${character} preparing for an important event or celebration`,
+                `Open with ${character} meeting someone completely unexpected`,
+                `Start with ${character} noticing that something they use every day has started acting magical`,
+                `Begin with ${character} getting lost in a familiar place that's become unfamiliar`,
+                `Open with ${character} discovering they have a new ability they didn't know about`,
+                `Start during a storm, unusual weather, or magical phenomenon`,
+                `Begin with ${character} helping someone else with their problem first`,
+                `Open with ${character} finding an object that doesn't belong in their world`
             ]);
 
-            return `You are a master children's storyteller creating a unique bedtime story. Make this story completely different from typical fairy tales.
+            const firstParagraphStyle = getRandomElement([
+                'Start with action - show the character already doing something interesting',
+                'Begin with dialogue - let someone speak first, then reveal who they are',
+                'Open with a sensory detail - a sound, smell, or sight that draws us in',
+                'Start with a question the character is wondering about',
+                'Begin by describing something magical happening right now',
+                'Open with the character making a discovery',
+                'Start with an emotional moment - joy, curiosity, or gentle concern'
+            ]);
+
+            const timeOfDay = getRandomElement([
+                'during a purple-pink sunrise when everything looks different',
+                'at the golden hour when shadows are long and magical',
+                'during a gentle afternoon when the light is warm and sleepy',
+                'in the deep blue twilight when stars are just appearing',
+                'during a misty early morning when everything is soft and quiet',
+                'at midnight when only magical creatures are awake',
+                'during a rainbow-filled moment after gentle rain'
+            ]);
+
+            return `You are a master children's storyteller creating a unique bedtime story. This story must start completely differently from typical children's stories.
 
 STORY REQUIREMENTS:
 - Main Character: ${character} (${characterPersonality})
@@ -914,7 +946,16 @@ STORY REQUIREMENTS:
 - Story Style: ${storyStyle}
 - Narrative Voice: ${narrativeVoice}
 - Unique Elements: ${uniqueElements}
-- Plot Structure: ${plotStructure}
+- Time Setting: ${timeOfDay}
+
+CRITICAL OPENING REQUIREMENTS:
+- Opening Strategy: ${storyOpening}
+- First Paragraph Style: ${firstParagraphStyle}
+- NEVER use "Once upon a time" or "Long ago" or "In a faraway land"
+- NEVER start with "There was/lived a..."
+- DO NOT start by introducing the character's background or location first
+- Jump directly into action, dialogue, or an intriguing moment
+- Make the first sentence grab attention immediately
 
 CREATIVE GUIDELINES:
 - Write exactly 10 paragraphs, each 3-4 sentences long
@@ -926,11 +967,19 @@ CREATIVE GUIDELINES:
 - Make the ${element} central to the plot, not just mentioned
 - Show don't tell - let actions demonstrate the lesson
 - End with a satisfying, peaceful conclusion perfect for bedtime
-- Avoid clichéd phrases like "once upon a time" - be original!
+
+FORBIDDEN OPENING PHRASES:
+- "Once upon a time"
+- "Long ago"
+- "In a faraway land"
+- "There was a"
+- "There lived a"
+- "[Character name] was a"
+- "In the [setting]"
 
 TONE: Magical yet grounded, imaginative yet believable, gentle yet engaging
 
-Create a story that feels completely fresh and different. Surprise me with unexpected details and creative solutions!
+Create a story that starts with immediate intrigue and feels completely fresh!
 
 Story:`;
         }
