@@ -275,11 +275,20 @@
         }
 
         .book-page.cover-page {
-            background: linear-gradient(135deg, #FFE5B4 0%, #E6F3FF 100%);
+            background: linear-gradient(135deg, #4a90e2 0%, #7b68ee 50%, #ff6b9d 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 6s ease-in-out infinite;
             background-image: none;
             justify-content: center;
             align-items: center;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
         }
 
         .book-page.cover-page .page-content {
@@ -423,9 +432,52 @@
         }
 
         .cover-decoration {
-            font-size: 4em;
-            margin: 30px 0;
+            font-size: 3em;
+            margin: 20px 0;
             animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .cover-sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .sparkle {
+            position: absolute;
+            color: rgba(255,255,255,0.8);
+            font-size: 1.5em;
+            animation: sparkle 4s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { 
+                opacity: 0.3; 
+                transform: scale(0.8) rotate(0deg); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2) rotate(180deg); 
+            }
+        }
+
+        .cover-illustration {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            animation: float 4s ease-in-out infinite;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
         }
 
         @keyframes float {
@@ -434,16 +486,38 @@
         }
 
         .cover-title {
-            font-size: 3em;
-            color: #5a67d8;
+            font-size: 2.8em;
+            color: white;
             margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            font-weight: bold;
+            background: linear-gradient(45deg, #fff, #fffacd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            padding: 0 20px;
         }
 
         .cover-subtitle {
-            font-size: 1.4em;
-            color: #666;
-            margin-bottom: 40px;
+            font-size: 1.2em;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .cover-character-info {
+            font-size: 1em;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         /* Responsive design */
@@ -2472,12 +2546,29 @@ Write the complete 10-paragraph story now:
             const coverPage = document.createElement('div');
             coverPage.className = 'book-page cover-page';
             coverPage.dataset.page = '0';
+            // Generate contextual cover elements
+            const characterEmoji = getCharacterEmoji(story.character);
+            const settingEmoji = getSettingEmoji(story.setting);
+            
             coverPage.innerHTML = `
-                <div class="page-content">
-                    <div class="cover-decoration">📚</div>
+                <div class="cover-sparkles">
+                    <div class="sparkle" style="top: 20%; left: 10%; animation-delay: 0s;">✨</div>
+                    <div class="sparkle" style="top: 30%; right: 15%; animation-delay: 1s;">⭐</div>
+                    <div class="sparkle" style="bottom: 25%; left: 20%; animation-delay: 2s;">💫</div>
+                    <div class="sparkle" style="bottom: 40%; right: 10%; animation-delay: 3s;">✨</div>
+                    <div class="sparkle" style="top: 60%; left: 50%; animation-delay: 1.5s;">🌟</div>
+                </div>
+                <div class="page-content" style="z-index: 2; position: relative;">
+                    <div class="cover-decoration">📖</div>
+                    <div class="cover-illustration">
+                        ${characterEmoji}
+                    </div>
                     <h1 class="cover-title">${story.title}</h1>
-                    <p class="cover-subtitle">A Magical Bedtime Story</p>
-                    <div class="cover-decoration">✨🌙✨</div>
+                    <div class="cover-character-info">
+                        Starring ${story.character} ${characterEmoji} in the ${story.setting} ${settingEmoji}
+                    </div>
+                    <p class="cover-subtitle">A Magical Bedtime Adventure</p>
+                    <div class="cover-decoration">🌙 Sweet Dreams 🌙</div>
                 </div>
             `;
             bookPages.appendChild(coverPage);
@@ -3138,6 +3229,73 @@ Write the complete 10-paragraph story now:
         function generatePlaceholderUrl(pageIndex) {
             // Simple fallback
             return generateStoryIllustration("placeholder", pageIndex);
+        }
+
+        function getCharacterEmoji(character) {
+            const characterEmojis = {
+                'butterfly': '🦋',
+                'dragon': '🐉',
+                'rabbit': '🐰',
+                'cat': '🐱', 
+                'bird': '🐦',
+                'bear': '🐻',
+                'fox': '🦊',
+                'owl': '🦉',
+                'deer': '🦌',
+                'squirrel': '🐿️',
+                'elephant': '🐘',
+                'lion': '🦁',
+                'tiger': '🐅',
+                'mouse': '🐭',
+                'frog': '🐸',
+                'turtle': '🐢',
+                'hedgehog': '🦔',
+                'unicorn': '🦄'
+            };
+            
+            // Find matching character or return a generic friendly face
+            for (const [key, emoji] of Object.entries(characterEmojis)) {
+                if (character.toLowerCase().includes(key)) {
+                    return emoji;
+                }
+            }
+            return '🌟'; // Default magical star for unknown characters
+        }
+
+        function getSettingEmoji(setting) {
+            const settingEmojis = {
+                'enchanted forest': '🌲',
+                'magical kingdom': '🏰',
+                'underwater world': '🌊',
+                'cozy village': '🏘️',
+                'mountain peak': '⛰️',
+                'flower field': '🌸',
+                'crystal palace': '💎',
+                'rainbow realm': '🌈',
+                'star kingdom': '⭐',
+                'fairy village': '🧚',
+                'wizard tower': '🗼',
+                'dragon castle': '🏰',
+                'moon base': '🌙',
+                'jungle adventure': '🌴',
+                'pirate ship': '⛵',
+                'circus tent': '🎪',
+                'grandmother house': '🏠',
+                'magical bakery': '🧁'
+            };
+            
+            // Find exact match first
+            if (settingEmojis[setting.toLowerCase()]) {
+                return settingEmojis[setting.toLowerCase()];
+            }
+            
+            // Find partial matches
+            for (const [key, emoji] of Object.entries(settingEmojis)) {
+                if (setting.toLowerCase().includes(key.split(' ')[0])) {
+                    return emoji;
+                }
+            }
+            return '✨'; // Default sparkle for unknown settings
         }
 
         function hashString(str) {
