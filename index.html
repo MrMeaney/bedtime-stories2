@@ -1684,7 +1684,10 @@ Please write the complete story now:`;
             document.getElementById('storyContent').innerHTML = `
                 <div style="text-align: center; padding: 50px;">
                     <h3 style="color: #5a67d8; margin-bottom: 20px;">📖 Your Story is Ready!</h3>
-                    <p style="font-size: 1.1em; margin-bottom: 20px;">Click the button below to open your magical storybook!</p>
+                    <p style="font-size: 1.1em; margin-bottom: 15px;">Click the button below to open your magical storybook!</p>
+                    <p style="font-size: 0.95em; color: #666; margin-bottom: 20px;">
+                        ✨ AI illustrations are being created and will appear as you read
+                    </p>
                     <button onclick="openStoryBook()" style="
                         background: linear-gradient(135deg, #ff6b6b, #ffa500);
                         color: white;
@@ -1732,6 +1735,10 @@ Please write the complete story now:`;
             const bookPages = document.getElementById('bookPages');
             bookPages.innerHTML = '';
             
+            // Start preloading images immediately
+            preloadImages(story);
+            const storyId = hashString(story.title + story.character + story.setting);
+            
             // Create cover page
             const coverPage = document.createElement('div');
             coverPage.className = 'book-page cover-page';
@@ -1746,24 +1753,82 @@ Please write the complete story now:`;
             `;
             bookPages.appendChild(coverPage);
             
-            // Create story pages
+            // Create story pages with placeholders
             story.pages.forEach((pageText, index) => {
                 const page = document.createElement('div');
                 page.className = 'book-page';
                 page.dataset.page = index + 1;
                 
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
-                const imageUrl = generateImageUrl(imagePrompt);
+                const imageUrl = generateImageUrl(imagePrompt, index, storyId);
                 
                 page.innerHTML = `
                     <div class="page-content">
                         <div class="page-text">${pageText}</div>
-                        <img src="${imageUrl}" alt="Story illustration for page ${index + 1}" class="page-illustration" loading="lazy">
+                        <div class="image-container" data-page-index="${index}">
+                            ${createImagePlaceholder()}
+                        </div>
                     </div>
                     <div class="page-number">Page ${index + 1}</div>
                 `;
                 bookPages.appendChild(page);
+                
+                // Replace placeholder with actual image once loaded
+                replaceImagePlaceholder(index, imageUrl);
             });
+        }
+
+        function replaceImagePlaceholder(pageIndex, imageUrl) {
+            // Create image element
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.className = 'page-illustration';
+            img.alt = `Story illustration for page ${pageIndex + 1}`;
+            img.style.opacity = '0';
+            img.style.transition = 'opacity 0.5s ease';
+            
+            img.onload = function() {
+                const container = document.querySelector(`[data-page-index="${pageIndex}"]`);
+                if (container) {
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                    // Fade in the image
+                    setTimeout(() => img.style.opacity = '1', 50);
+                }
+            };
+            
+            img.onerror = function() {
+                const container = document.querySelector(`[data-page-index="${pageIndex}"]`);
+                if (container) {
+                    container.innerHTML = `
+                        <div class="image-placeholder" style="
+                            width: 280px; 
+                            height: 200px; 
+                            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                            border: 2px dashed #d97706;
+                            border-radius: 20px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            color: #92400e;
+                            font-size: 14px;
+                            text-align: center;
+                            padding: 20px;
+                            box-sizing: border-box;
+                        ">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📚</div>
+                            <div>Illustration unavailable</div>
+                            <div style="margin-top: 8px; font-size: 12px; opacity: 0.7;">Story continues...</div>
+                        </div>
+                    `;
+                }
+            };
+            
+            // Start loading with timeout
+            setTimeout(() => {
+                img.src = imageUrl;
+            }, pageIndex * 200); // Stagger loading to avoid overwhelming the API
         }
 
         function generateImagePrompt(character, setting, pageIndex) {
@@ -1783,14 +1848,81 @@ Please write the complete story now:`;
             return prompts[pageIndex] || `cute ${character} in magical ${setting}, children's book illustration style`;
         }
 
-        function generateImageUrl(prompt) {
+        function generateImageUrl(prompt, pageIndex, storyId) {
             const cleanPrompt = encodeURIComponent(
                 `${prompt}, children's book illustration, cartoon style, bright colors, friendly, cute, safe for kids, storybook art`
             );
             const negativePrompt = encodeURIComponent("scary, dark, violent, realistic, photographic, inappropriate");
-            const seed = Math.floor(Math.random() * 10000);
             
-            return `https://image.pollinations.ai/prompt/${cleanPrompt}?negative=${negativePrompt}&width=280&height=200&seed=${seed}&model=flux&enhance=true`;
+            // Use consistent seed based on story content for caching
+            const seed = hashString(storyId + pageIndex + prompt) % 10000;
+            
+            return `https://image.pollinations.ai/prompt/${cleanPrompt}?negative=${negativePrompt}&width=280&height=200&seed=${seed}&model=flux&enhance=false`;
+        }
+
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        function createImagePlaceholder() {
+            return `
+                <div class="image-placeholder" style="
+                    width: 280px; 
+                    height: 200px; 
+                    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+                    border: 2px dashed #94a3b8;
+                    border-radius: 20px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: #64748b;
+                    font-size: 14px;
+                    text-align: center;
+                    padding: 20px;
+                    box-sizing: border-box;
+                ">
+                    <div style="font-size: 24px; margin-bottom: 8px;">🎨</div>
+                    <div>Creating magical illustration...</div>
+                    <div style="margin-top: 8px; font-size: 12px; opacity: 0.7;">This may take a moment</div>
+                </div>
+            `;
+        }
+
+        function preloadImages(story) {
+            // Start preloading images immediately when story is created
+            const storyId = hashString(story.title + story.character + story.setting);
+            const imagePromises = [];
+            
+            story.pages.forEach((pageText, index) => {
+                const imagePrompt = generateImagePrompt(story.character, story.setting, index);
+                const imageUrl = generateImageUrl(imagePrompt, index, storyId);
+                
+                // Create image object to start loading
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                
+                const imagePromise = new Promise((resolve) => {
+                    img.onload = () => resolve({ index, url: imageUrl, loaded: true });
+                    img.onerror = () => resolve({ index, url: imageUrl, loaded: false });
+                    // Timeout after 10 seconds
+                    setTimeout(() => resolve({ index, url: imageUrl, loaded: false }), 10000);
+                });
+                
+                img.src = imageUrl;
+                imagePromises.push(imagePromise);
+            });
+            
+            // Store promises globally so we can check loading status
+            window.currentImagePromises = imagePromises;
+            
+            return imagePromises;
         }
 
         function showBookPage(pageIndex) {
