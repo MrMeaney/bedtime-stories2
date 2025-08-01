@@ -2604,22 +2604,321 @@ Write the complete 10-paragraph story now:
         }
 
         function generateStoryIllustration(prompt, pageIndex) {
-            // Create beautiful, themed SVG illustrations based on the story content
-            const illustrations = [
-                createCharacterIllustration(pageIndex),
-                createMagicalElementIllustration(pageIndex), 
-                createSettingIllustration(pageIndex),
-                createAdventureIllustration(pageIndex),
-                createFriendshipIllustration(pageIndex),
-                createDiscoveryIllustration(pageIndex),
-                createCelebrationIllustration(pageIndex),
-                createWisdomIllustration(pageIndex),
-                createCommunityIllustration(pageIndex),
-                createPeacefulEndingIllustration(pageIndex)
-            ];
+            // Parse the prompt to extract story elements
+            const storyContext = parseImagePrompt(prompt);
             
-            const selectedIllustration = illustrations[pageIndex % illustrations.length];
-            return `data:image/svg+xml;base64,${btoa(selectedIllustration)}`;
+            // Create contextual SVG illustration based on story content
+            const contextualSvg = createContextualSVG(storyContext, pageIndex);
+            return `data:image/svg+xml;base64,${btoa(contextualSvg)}`;
+        }
+
+        function parseImagePrompt(prompt) {
+            // Extract character, setting, and action from the prompt
+            const character = extractCharacterFromPrompt(prompt);
+            const setting = extractSettingFromPrompt(prompt);
+            const action = extractActionFromPrompt(prompt);
+            const mood = extractMoodFromPrompt(prompt);
+            
+            return { character, setting, action, mood };
+        }
+
+        function extractCharacterFromPrompt(prompt) {
+            const characters = ['butterfly', 'dragon', 'rabbit', 'cat', 'bird', 'bear', 'fox', 'owl', 'deer', 'squirrel'];
+            const found = characters.find(char => prompt.toLowerCase().includes(char));
+            return found || 'friendly creature';
+        }
+
+        function extractSettingFromPrompt(prompt) {
+            const settings = ['enchanted forest', 'magical kingdom', 'underwater world', 'cozy village', 'mountain peak', 'flower field', 'crystal palace'];
+            const found = settings.find(setting => prompt.toLowerCase().includes(setting.replace(' ', '.*')));
+            return found || 'magical place';
+        }
+
+        function extractActionFromPrompt(prompt) {
+            if (prompt.includes('discovering') || prompt.includes('finding')) return 'discovering';
+            if (prompt.includes('helping') || prompt.includes('caring')) return 'helping';
+            if (prompt.includes('meeting') || prompt.includes('friendship')) return 'meeting';
+            if (prompt.includes('celebration') || prompt.includes('party')) return 'celebrating';
+            if (prompt.includes('sleeping') || prompt.includes('peaceful')) return 'resting';
+            if (prompt.includes('magic') || prompt.includes('glowing')) return 'magic';
+            return 'exploring';
+        }
+
+        function extractMoodFromPrompt(prompt) {
+            if (prompt.includes('joyful') || prompt.includes('celebration')) return 'joyful';
+            if (prompt.includes('peaceful') || prompt.includes('sleeping')) return 'peaceful';
+            if (prompt.includes('wonder') || prompt.includes('amazement')) return 'wonder';
+            if (prompt.includes('caring') || prompt.includes('helpful')) return 'caring';
+            return 'happy';
+        }
+
+        function createContextualSVG(context, pageIndex) {
+            const { character, setting, action, mood } = context;
+            
+            // Choose colors based on setting
+            const settingColors = getSettingColors(setting);
+            
+            // Create character shape based on type
+            const characterShape = createCharacterShape(character, settingColors.primary);
+            
+            // Create background based on setting
+            const background = createSettingBackground(setting, settingColors);
+            
+            // Add action elements
+            const actionElements = createActionElements(action, settingColors.accent);
+            
+            // Combine all elements into contextual SVG
+            return `
+                <svg width="280" height="200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bg${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:${settingColors.bgStart};stop-opacity:0.9" />
+                            <stop offset="100%" style="stop-color:${settingColors.bgEnd};stop-opacity:0.7" />
+                        </linearGradient>
+                        <radialGradient id="glow${pageIndex}" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:${settingColors.accent};stop-opacity:0.6" />
+                            <stop offset="100%" style="stop-color:${settingColors.accent};stop-opacity:0" />
+                        </radialGradient>
+                    </defs>
+                    
+                    <!-- Background -->
+                    <rect width="280" height="200" fill="url(#bg${pageIndex})" rx="15"/>
+                    ${background}
+                    
+                    <!-- Character -->
+                    <g transform="translate(140, 100)">
+                        ${characterShape}
+                    </g>
+                    
+                    <!-- Action elements -->
+                    ${actionElements}
+                    
+                    <!-- Mood sparkles -->
+                    ${createMoodSparkles(mood, settingColors.accent, pageIndex)}
+                    
+                    <!-- Page identifier -->
+                    <text x="140" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="${settingColors.primary}" opacity="0.7">
+                        ${character} in ${setting} - ${action}
+                    </text>
+                </svg>
+            `.trim();
+        }
+
+        function getSettingColors(setting) {
+            const colorSchemes = {
+                'enchanted forest': {
+                    primary: '#2d5016',
+                    accent: '#90ee90',
+                    bgStart: '#98fb98',
+                    bgEnd: '#228b22'
+                },
+                'magical kingdom': {
+                    primary: '#4b0082',
+                    accent: '#ffd700',
+                    bgStart: '#e6e6fa',
+                    bgEnd: '#9370db'
+                },
+                'underwater world': {
+                    primary: '#0077be',
+                    accent: '#00ced1',
+                    bgStart: '#e0f6ff',
+                    bgEnd: '#87ceeb'
+                },
+                'cozy village': {
+                    primary: '#8b4513',
+                    accent: '#ffa500',
+                    bgStart: '#fff8dc',
+                    bgEnd: '#deb887'
+                },
+                'default': {
+                    primary: '#4169e1',
+                    accent: '#ffd700',
+                    bgStart: '#f0f8ff',
+                    bgEnd: '#87cefa'
+                }
+            };
+            
+            return colorSchemes[setting] || colorSchemes['default'];
+        }
+
+        function createCharacterShape(character, primaryColor) {
+            const shapes = {
+                'butterfly': `
+                    <!-- Butterfly wings -->
+                    <ellipse cx="-15" cy="-10" rx="12" ry="20" fill="${primaryColor}" opacity="0.8"/>
+                    <ellipse cx="15" cy="-10" rx="12" ry="20" fill="${primaryColor}" opacity="0.8"/>
+                    <ellipse cx="-15" cy="10" rx="8" ry="15" fill="${primaryColor}" opacity="0.6"/>
+                    <ellipse cx="15" cy="10" rx="8" ry="15" fill="${primaryColor}" opacity="0.6"/>
+                    <!-- Butterfly body -->
+                    <ellipse cx="0" cy="0" rx="2" ry="25" fill="#2d2d2d"/>
+                    <!-- Antennae -->
+                    <line x1="0" y1="-20" x2="-5" y2="-25" stroke="#2d2d2d" stroke-width="1"/>
+                    <line x1="0" y1="-20" x2="5" y2="-25" stroke="#2d2d2d" stroke-width="1"/>
+                    <circle cx="-5" cy="-25" r="2" fill="${primaryColor}"/>
+                    <circle cx="5" cy="-25" r="2" fill="${primaryColor}"/>
+                `,
+                'dragon': `
+                    <!-- Dragon body -->
+                    <ellipse cx="0" cy="5" rx="25" ry="15" fill="${primaryColor}" opacity="0.8"/>
+                    <!-- Dragon head -->
+                    <ellipse cx="0" cy="-15" rx="15" ry="12" fill="${primaryColor}"/>
+                    <!-- Dragon wings -->
+                    <ellipse cx="-20" cy="-5" rx="15" ry="25" fill="${primaryColor}" opacity="0.6"/>
+                    <ellipse cx="20" cy="-5" rx="15" ry="25" fill="${primaryColor}" opacity="0.6"/>
+                    <!-- Dragon tail -->
+                    <ellipse cx="0" cy="25" rx="8" ry="20" fill="${primaryColor}" opacity="0.7"/>
+                    <!-- Eyes -->
+                    <circle cx="-8" cy="-15" r="3" fill="white"/>
+                    <circle cx="8" cy="-15" r="3" fill="white"/>
+                    <circle cx="-8" cy="-15" r="1.5" fill="black"/>
+                    <circle cx="8" cy="-15" r="1.5" fill="black"/>
+                `,
+                'rabbit': `
+                    <!-- Rabbit body -->
+                    <ellipse cx="0" cy="5" rx="18" ry="12" fill="${primaryColor}" opacity="0.8"/>
+                    <!-- Rabbit head -->
+                    <circle cx="0" cy="-10" r="12" fill="${primaryColor}"/>
+                    <!-- Rabbit ears -->
+                    <ellipse cx="-8" cy="-25" rx="4" ry="15" fill="${primaryColor}" opacity="0.9"/>
+                    <ellipse cx="8" cy="-25" rx="4" ry="15" fill="${primaryColor}" opacity="0.9"/>
+                    <!-- Inner ears -->
+                    <ellipse cx="-8" cy="-25" rx="2" ry="10" fill="#ffb6c1"/>
+                    <ellipse cx="8" cy="-25" rx="2" ry="10" fill="#ffb6c1"/>
+                    <!-- Eyes -->
+                    <circle cx="-5" cy="-12" r="2" fill="white"/>
+                    <circle cx="5" cy="-12" r="2" fill="white"/>
+                    <circle cx="-5" cy="-12" r="1" fill="black"/>
+                    <circle cx="5" cy="-12" r="1" fill="black"/>
+                    <!-- Nose -->
+                    <ellipse cx="0" cy="-6" rx="2" ry="1" fill="#ff69b4"/>
+                `,
+                'default': `
+                    <!-- Generic friendly creature -->
+                    <circle cx="0" cy="0" r="20" fill="${primaryColor}" opacity="0.8"/>
+                    <!-- Eyes -->
+                    <circle cx="-8" cy="-5" r="3" fill="white"/>
+                    <circle cx="8" cy="-5" r="3" fill="white"/>
+                    <circle cx="-8" cy="-5" r="1.5" fill="black"/>
+                    <circle cx="8" cy="-5" r="1.5" fill="black"/>
+                    <!-- Smile -->
+                    <path d="M -8 5 Q 0 12 8 5" stroke="white" stroke-width="2" fill="none"/>
+                `
+            };
+            
+            return shapes[character] || shapes['default'];
+        }
+
+        function createSettingBackground(setting, colors) {
+            const backgrounds = {
+                'enchanted forest': `
+                    <!-- Trees -->
+                    <ellipse cx="50" cy="150" rx="20" ry="40" fill="#228b22" opacity="0.6"/>
+                    <ellipse cx="230" cy="140" rx="25" ry="50" fill="#228b22" opacity="0.6"/>
+                    <ellipse cx="20" cy="160" rx="15" ry="30" fill="#32cd32" opacity="0.7"/>
+                    <!-- Flowers -->
+                    <circle cx="100" cy="180" r="5" fill="#ff69b4"/>
+                    <circle cx="180" cy="175" r="4" fill="#ffd700"/>
+                    <circle cx="260" cy="185" r="3" fill="#ff6347"/>
+                `,
+                'magical kingdom': `
+                    <!-- Castle towers -->
+                    <rect x="60" y="120" width="20" height="60" fill="${colors.primary}" opacity="0.7"/>
+                    <rect x="200" y="110" width="25" height="70" fill="${colors.primary}" opacity="0.7"/>
+                    <!-- Castle flags -->
+                    <polygon points="70,120 85,115 85,125" fill="${colors.accent}"/>
+                    <polygon points="212,110 230,105 230,115" fill="${colors.accent}"/>
+                    <!-- Stars -->
+                    <polygon points="30,40 32,46 38,46 33,50 35,56 30,52 25,56 27,50 22,46 28,46" fill="${colors.accent}"/>
+                    <polygon points="250,30 252,36 258,36 253,40 255,46 250,42 245,46 247,40 242,36 248,36" fill="${colors.accent}"/>
+                `,
+                'underwater world': `
+                    <!-- Coral -->
+                    <ellipse cx="40" cy="160" rx="15" ry="30" fill="#ff7f50" opacity="0.7"/>
+                    <ellipse cx="240" cy="150" rx="20" ry="35" fill="#ff6347" opacity="0.7"/>
+                    <!-- Seaweed -->
+                    <path d="M 80 200 Q 85 180 82 160 Q 78 140 85 120" stroke="#90ee90" stroke-width="4" fill="none" opacity="0.8"/>
+                    <path d="M 200 200 Q 195 180 198 160 Q 202 140 195 120" stroke="#90ee90" stroke-width="4" fill="none" opacity="0.8"/>
+                    <!-- Bubbles -->
+                    <circle cx="120" cy="60" r="3" fill="white" opacity="0.6"/>
+                    <circle cx="160" cy="80" r="2" fill="white" opacity="0.6"/>
+                    <circle cx="200" cy="50" r="4" fill="white" opacity="0.6"/>
+                `,
+                'cozy village': `
+                    <!-- Houses -->
+                    <rect x="50" y="140" width="30" height="40" fill="${colors.primary}" opacity="0.6"/>
+                    <polygon points="50,140 65,120 80,140" fill="#dc143c"/>
+                    <rect x="200" y="135" width="35" height="45" fill="${colors.primary}" opacity="0.6"/>
+                    <polygon points="200,135 217,115 235,135" fill="#dc143c"/>
+                    <!-- Smoke from chimneys -->
+                    <circle cx="60" cy="110" r="2" fill="gray" opacity="0.5"/>
+                    <circle cx="210" cy="105" r="2" fill="gray" opacity="0.5"/>
+                `,
+                'default': `
+                    <!-- Generic magical elements -->
+                    <circle cx="60" cy="60" r="5" fill="${colors.accent}" opacity="0.6"/>
+                    <circle cx="220" cy="80" r="4" fill="${colors.accent}" opacity="0.6"/>
+                    <circle cx="40" cy="120" r="3" fill="${colors.accent}" opacity="0.6"/>
+                `
+            };
+            
+            return backgrounds[setting] || backgrounds['default'];
+        }
+
+        function createActionElements(action, accentColor) {
+            const elements = {
+                'discovering': `
+                    <!-- Discovery sparkles -->
+                    <circle cx="140" cy="70" r="3" fill="${accentColor}" opacity="0.8">
+                        <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="150" cy="60" r="2" fill="${accentColor}" opacity="0.6">
+                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite"/>
+                    </circle>
+                `,
+                'helping': `
+                    <!-- Helping hearts -->
+                    <path d="M 100 50 C 100 47, 97 45, 95 45 C 93 45, 90 47, 90 50 C 90 53, 95 58, 100 63 C 105 58, 110 53, 110 50 C 110 47, 107 45, 105 45 C 103 45, 100 47, 100 50 Z" fill="${accentColor}" opacity="0.7"/>
+                    <path d="M 180 55 C 180 52, 177 50, 175 50 C 173 50, 170 52, 170 55 C 170 58, 175 63, 180 68 C 185 63, 190 58, 190 55 C 190 52, 187 50, 185 50 C 183 50, 180 52, 180 55 Z" fill="${accentColor}" opacity="0.5"/>
+                `,
+                'magic': `
+                    <!-- Magic wand effect -->
+                    <line x1="120" y1="80" x2="160" y2="60" stroke="${accentColor}" stroke-width="2"/>
+                    <polygon points="158,58 162,58 160,65" fill="${accentColor}"/>
+                    <circle cx="125" cy="77" r="2" fill="${accentColor}" opacity="0.8"/>
+                    <circle cx="155" cy="65" r="1.5" fill="${accentColor}" opacity="0.6"/>
+                `,
+                'celebrating': `
+                    <!-- Celebration confetti -->
+                    <rect x="80" y="40" width="3" height="3" fill="${accentColor}" opacity="0.8" transform="rotate(45 80 40)"/>
+                    <rect x="200" y="50" width="3" height="3" fill="${accentColor}" opacity="0.8" transform="rotate(45 200 50)"/>
+                    <rect x="120" y="30" width="3" height="3" fill="${accentColor}" opacity="0.8" transform="rotate(45 120 30)"/>
+                    <circle cx="160" cy="40" r="2" fill="${accentColor}" opacity="0.7"/>
+                `,
+                'default': `
+                    <!-- Default sparkles -->
+                    <circle cx="100" cy="50" r="2" fill="${accentColor}" opacity="0.6"/>
+                    <circle cx="180" cy="60" r="1.5" fill="${accentColor}" opacity="0.6"/>
+                `
+            };
+            
+            return elements[action] || elements['default'];
+        }
+
+        function createMoodSparkles(mood, accentColor, pageIndex) {
+            const sparkleCount = mood === 'joyful' ? 6 : mood === 'peaceful' ? 3 : 4;
+            let sparkles = '';
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                const x = 50 + (i * 35) + (pageIndex * 7) % 20;
+                const y = 40 + (i * 10) % 30;
+                const size = 1 + (i % 3);
+                
+                sparkles += `<circle cx="${x}" cy="${y}" r="${size}" fill="${accentColor}" opacity="0.5">
+                    <animate attributeName="opacity" values="0.5;0.1;0.5" dur="${2 + i * 0.3}s" repeatCount="indefinite"/>
+                </circle>`;
+            }
+            
+            return sparkles;
         }
 
         function createCharacterIllustration(pageIndex) {
