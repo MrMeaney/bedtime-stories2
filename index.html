@@ -1900,16 +1900,37 @@ Write the complete 10-paragraph story now:
                 `The ${character} learned that their ${element} had amazing powers that could help solve problems and bring joy to others.`
             ];
             
-            // Create dynamic story by mixing elements differently each time
+            // Create dynamic story ensuring each page is unique
             const story = [];
-            story.push(getRandomElement(openings));
+            const usedContent = new Set(); // Track used content to prevent duplicates
+            
+            // Add opening
+            const opening = getRandomElement(openings);
+            story.push(opening);
+            usedContent.add(opening);
+            
+            // Shuffle developments to ensure variety
+            const shuffledDevelopments = shuffleArray([...developments]);
+            let developmentIndex = 0;
             
             for (let i = 1; i < length - 1; i++) {
-                if (i < 3) {
-                    story.push(getRandomElement(developments));
-                } else {
-                    story.push(generateDynamicMiddleBeat(elements, i));
-                }
+                let newBeat;
+                let attempts = 0;
+                
+                do {
+                    if (i < 3 && developmentIndex < shuffledDevelopments.length) {
+                        // Use each development only once
+                        newBeat = shuffledDevelopments[developmentIndex];
+                        developmentIndex++;
+                    } else {
+                        // Generate unique middle beats
+                        newBeat = generateDynamicMiddleBeat(elements, i, usedContent);
+                    }
+                    attempts++;
+                } while (usedContent.has(newBeat) && attempts < 5);
+                
+                story.push(newBeat);
+                usedContent.add(newBeat);
             }
             
             story.push(generateSatisfyingEnding(elements));
@@ -1917,21 +1938,35 @@ Write the complete 10-paragraph story now:
             return story;
         }
 
-        function generateDynamicMiddleBeat(elements, beatNumber) {
+        function generateDynamicMiddleBeat(elements, beatNumber, usedContent = new Set()) {
             const character = elements.character;
             const element = elements.element;
             const supporter = elements.contextualSupporters[beatNumber % elements.contextualSupporters.length];
             const location = elements.uniqueSettings[beatNumber % elements.uniqueSettings.length];
             
+            // Generate multiple unique beat options
             const beatTypes = [
                 `${capitalize(character)} worked together with the ${supporter} to help solve the problem. They learned that ${elements.thematicElements.descriptors[0]} makes everything better.`,
                 `In the ${location}, something wonderful happened. The ${element} began to glow and ${elements.magicalMoments[0].effect}.`,
                 `${capitalize(character)} used their ${element} to help others in need. They discovered that ${elements.thematicElements.primaryTheme} brings joy to everyone.`,
                 `The ${supporter} taught ${capitalize(character)} an important lesson about friendship and ${elements.thematicElements.primaryTheme}.`,
-                `As ${capitalize(character)} continued their adventure, more friends joined to help. Together, they made the ${elements.setting} a happier place.`
+                `As ${capitalize(character)} continued their adventure, more friends joined to help. Together, they made the ${elements.setting} a happier place.`,
+                `${capitalize(character)} found a new friend in the ${location} who needed help. Using the power of ${elements.thematicElements.primaryTheme}, they solved the problem together.`,
+                `The magical ${element} showed ${capitalize(character)} something amazing in the ${location}. It was the most beautiful sight they had ever seen.`,
+                `${capitalize(character)} shared their ${element} with the ${supporter}, and together they spread happiness throughout the ${elements.setting}.`,
+                `In a quiet moment, ${capitalize(character)} realized how much they had learned about ${elements.thematicElements.primaryTheme} from their new friends.`,
+                `The adventure led ${capitalize(character)} to discover that helping others with their ${element} made them feel very happy inside.`
             ];
             
-            return getRandomElement(beatTypes);
+            // Filter out already used content and return a unique beat
+            const availableBeats = beatTypes.filter(beat => !usedContent.has(beat));
+            
+            if (availableBeats.length > 0) {
+                return getRandomElement(availableBeats);
+            } else {
+                // If all beats are used, generate a simple unique one
+                return `${capitalize(character)} continued their wonderful adventure with their magical ${element}, learning more about ${elements.thematicElements.primaryTheme} every day.`;
+            }
         }
 
         function generateSatisfyingEnding(elements) {
@@ -2432,36 +2467,41 @@ Write the complete 10-paragraph story now:
                 page.dataset.page = index + 1;
                 
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
-                const imageUrl = generateImageUrl(imagePrompt, index, storyId);
+                const svgImageUrl = generateStoryIllustration(imagePrompt, index);
                 
                 page.innerHTML = `
                     <div class="page-content">
                         <div class="page-text">${pageText}</div>
                         <div class="image-container" data-page-index="${index}">
-                            ${createImagePlaceholder()}
+                            <img src="${svgImageUrl}" 
+                                 alt="Story illustration for page ${index + 1}" 
+                                 class="page-illustration"
+                                 style="width: 280px; height: 200px; border-radius: 15px; opacity: 1;">
                         </div>
                     </div>
                     <div class="page-number">Page ${index + 1}</div>
                 `;
                 bookPages.appendChild(page);
-                
-                // Replace placeholder with actual image once loaded
-                replaceImagePlaceholder(index, imageUrl);
             });
         }
 
         function replaceImagePlaceholder(pageIndex, initialImageUrl) {
             const imagePrompt = generateImagePrompt(window.currentStory?.character || 'character', window.currentStory?.setting || 'setting', pageIndex);
-            const storyId = window.currentStory ? hashString(window.currentStory.title + window.currentStory.character + window.currentStory.setting) : 'default';
             
-            // Try multiple image sources in sequence
-            const imageSources = [
-                generatePollinationsUrl(imagePrompt, pageIndex, storyId),
-                generateFallbackImageUrl(imagePrompt, pageIndex),
-                generatePlaceholderUrl(pageIndex)
-            ];
+            // Use our reliable SVG illustration system directly
+            const svgImageUrl = generateStoryIllustration(imagePrompt, pageIndex);
             
-            tryLoadImage(pageIndex, imageSources, 0);
+            // Find the image container for this page
+            const imageContainer = document.querySelector(`[data-page-index="${pageIndex}"]`);
+            if (imageContainer) {
+                imageContainer.innerHTML = `
+                    <img src="${svgImageUrl}" 
+                         alt="Story illustration for page ${pageIndex + 1}" 
+                         class="page-illustration"
+                         style="width: 280px; height: 200px; border-radius: 15px; opacity: 1;">
+                `;
+                console.log(`✅ SVG image loaded for page ${pageIndex}`);
+            }
         }
 
         function tryLoadImage(pageIndex, imageSources, sourceIndex) {
