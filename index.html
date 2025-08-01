@@ -870,7 +870,7 @@
             ];
             
             const preview = getRandomElement(previewTemplates);
-            const title = `The ${capitalize(character)} and the Magic of ${capitalize(setting)}`;
+            const title = `${capitalize(character)} and the Magic of ${formatSettingForTitle(setting)}`;
             
             // Add lesson hint
             const lessonHint = `This story will teach that ${lesson}.`;
@@ -1134,13 +1134,17 @@ Write the complete 10-paragraph story now:
             const narrativeBuilder = getNarrativeBuilder(structure);
             const storyBeats = narrativeBuilder(elements, length);
             
-            // Create readable titles using actual character names
+            // Create readable titles with proper grammar
+            const properElement = formatElementForTitle(element);
+            const properSetting = formatSettingForTitle(setting);
+            const properStructure = structure.replace('-', ' ');
+            
             const titleVariations = [
-                `${capitalize(character)} and the Magic ${capitalize(element)}`,
+                `${capitalize(character)} and the ${properElement}`,
                 `The Adventures of ${capitalize(character)}`,
-                `${capitalize(character)}'s ${capitalize(structure.replace('-', ' '))}`,
+                `${capitalize(character)}'s ${capitalize(properStructure)}`,
                 `How ${capitalize(character)} Helped Everyone`,
-                `The ${capitalize(character)} and the Secret of ${capitalize(setting)}`
+                `${capitalize(character)} and the Secret of the ${properSetting}`
             ];
             
             return {
@@ -1291,7 +1295,7 @@ Write the complete 10-paragraph story now:
         }
 
         function createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge) {
-            const title = `${capitalize(character)} and the ${capitalize(plotTwist)}`;
+            const title = `${capitalize(character)} and the ${capitalize(plotTwist.replace(/([a-z])([A-Z])/g, '$1 $2'))}`;
             
             const pages = [
                 `Once upon a time, in a wonderful ${setting}, lived a ${character} who was known for ${themes.split(',')[0].trim()}. They had a special ${element} that would soon lead to an amazing ${plotTwist}.`,
@@ -1384,7 +1388,7 @@ Write the complete 10-paragraph story now:
         }
 
         function createDiscoveryStory(character, setting, themes, element, lesson) {
-            const title = `The ${capitalize(character)} and the Secret of ${capitalize(setting)}`;
+            const title = `${capitalize(character)} and the Secret of ${formatSettingForTitle(setting)}`;
             
             const pages = [
                 `Long ago, in a mysterious ${setting}, a curious ${character} loved to explore and discover new wonders. Every day brought exciting adventures and amazing surprises.`,
@@ -1414,7 +1418,7 @@ Write the complete 10-paragraph story now:
         function createMysteryStory(character, setting, themes, element, lesson) {
             const mysteries = ['missing rainbow colors', 'disappearing flowers', 'silent music boxes', 'forgotten laughter', 'lost starlight'];
             const mystery = getRandomElement(mysteries);
-            const title = `${capitalize(character)} and the Mystery of the ${capitalize(mystery)}`;
+            const title = `${capitalize(character)} and the Mystery of the ${mystery.split(' ').map(word => capitalize(word)).join(' ')}`;
             
             const pages = [
                 `In the peaceful ${setting}, everything was usually perfect. But ${capitalize(character)} noticed something strange - the ${mystery} had vanished overnight, leaving everyone puzzled and sad.`,
@@ -1444,7 +1448,7 @@ Write the complete 10-paragraph story now:
         function createHelpingStory(character, setting, themes, element, lesson) {
             const problems = ['wilted garden', 'broken bridge', 'sad waterfall', 'cold mountain', 'empty playground'];
             const problem = getRandomElement(problems);
-            const title = `How ${capitalize(character)} Saved the ${capitalize(problem)}`;
+            const title = `How ${capitalize(character)} Saved the ${problem.split(' ').map(word => capitalize(word)).join(' ')}`;
             
             const pages = [
                 `${capitalize(character)} loved their home in the beautiful ${setting}. Every day was filled with joy and wonder, until they discovered the ${problem} that made everyone worried.`,
@@ -1474,7 +1478,7 @@ Write the complete 10-paragraph story now:
         function createMagicalTransformationStory(character, setting, themes, element, lesson) {
             const transformations = ['could speak all languages', 'grew beautiful wings', 'gained healing powers', 'could make flowers bloom', 'became invisible at will'];
             const transformation = getRandomElement(transformations);
-            const title = `The Day ${capitalize(character)} ${transformation}`;
+            const title = `The Day ${capitalize(character)} ${transformation.charAt(0).toUpperCase() + transformation.slice(1)}`;
             
             const pages = [
                 `It started as an ordinary morning in the ${setting}. ${capitalize(character)} was playing with their special ${element} when something extraordinary happened - they suddenly ${transformation}!`,
@@ -1534,7 +1538,7 @@ Write the complete 10-paragraph story now:
         function createCommunityStory(character, setting, themes, element, lesson) {
             const communityEvents = ['harvest festival', 'star-watching celebration', 'rainbow day', 'friendship fair', 'gratitude gathering'];
             const event = getRandomElement(communityEvents);
-            const title = `${capitalize(character)} and the Great ${capitalize(event)}`;
+            const title = `${capitalize(character)} and the Great ${event.split(' ').map(word => capitalize(word)).join(' ')}`;
             
             const pages = [
                 `The ${setting} was buzzing with excitement! It was time for the annual ${event}, and ${capitalize(character)} couldn't wait to participate with their special ${element}.`,
@@ -2184,6 +2188,24 @@ Write the complete 10-paragraph story now:
                 `With hearts full of love and minds full of wonderful memories, everyone in the ${setting} settled down for the night. The ${character}'s lesson would live on in their dreams and in their daily lives. The end. Good night! 🌙✨`
             ];
             return getRandomElement(endings);
+        }
+
+        function formatElementForTitle(element) {
+            // Handle elements that already have adjectives vs those that need "Magical"
+            const hasAdjective = /^(magical|beautiful|sparkling|glowing|golden|silver|crystal|rainbow|ancient|mysterious|enchanted|special)\s+/i.test(element);
+            
+            if (hasAdjective) {
+                // Already has an adjective, just capitalize properly
+                return element.split(' ').map(word => capitalize(word)).join(' ');
+            } else {
+                // Needs "Magical" prefix
+                return `Magical ${capitalize(element)}`;
+            }
+        }
+
+        function formatSettingForTitle(setting) {
+            // Capitalize each word in the setting name properly
+            return setting.split(' ').map(word => capitalize(word)).join(' ');
         }
 
         function capitalize(str) {
