@@ -2266,7 +2266,11 @@ Write the complete 10-paragraph story now:
 
         function formatElementForTitle(element) {
             // Handle elements that already have adjectives vs those that need "Magical"
-            const hasAdjective = /^(magical|beautiful|sparkling|glowing|golden|silver|crystal|rainbow|ancient|mysterious|enchanted|special)\s+/i.test(element);
+            const adjectives = ['magical', 'beautiful', 'sparkling', 'glowing', 'golden', 'silver', 'crystal', 'rainbow', 'ancient', 'mysterious', 'enchanted', 'special', 'magic', 'shiny', 'bright', 'colorful', 'lovely', 'pretty', 'wonderful', 'amazing'];
+            
+            // Check if element contains any adjective words
+            const elementWords = element.toLowerCase().split(' ');
+            const hasAdjective = adjectives.some(adj => elementWords.includes(adj));
             
             if (hasAdjective) {
                 // Already has an adjective, just capitalize properly
