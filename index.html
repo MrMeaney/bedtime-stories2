@@ -1103,20 +1103,23 @@
             ];
             const selectedStyle = getRandomElement(storyStyles);
             
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'enhanced-template');
+            
             return `You are a creative children's author. Write a gentle bedtime story as a ${selectedStyle}.
 
 CHARACTER: ${character}
 SETTING: ${setting}  
 THEMES: ${themes}
 MAGIC ITEM: ${element}
-LESSON: ${lesson}
+LESSON: ${contextualLesson}
 
 STORY REQUIREMENTS:
 ✅ Write EXACTLY 10 paragraphs numbered 1-10
 ✅ Each paragraph is 2-3 sentences  
 ✅ Use simple, age-appropriate language (ages 2-5)
 ✅ Include the magical ${element} prominently
-✅ Make the ${character} learn that ${lesson}
+✅ Make the ${character} learn that ${contextualLesson}
 ✅ Include themes of ${themes.split(',')[0].trim()} throughout
 ✅ End with "The end. Sweet dreams! 🌙✨"
 ✅ Keep it positive, warm, and bedtime-appropriate
@@ -1134,7 +1137,10 @@ Write the complete 10-paragraph story now:
         }
 
         function createSimpleStoryPrompt(character, setting, themes, element) {
-            return `Tell a bedtime story: A ${character} in a ${setting} finds a magical ${element} and learns about ${themes.split(',')[0].trim()}. The story teaches that ${lesson}. Make it 10 short paragraphs for children ages 2-5. Start with "Once upon a time" and end with "The end. Sweet dreams!"`;
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'simple-template');
+            
+            return `Tell a bedtime story: A ${character} in a ${setting} finds a magical ${element} and learns about ${themes.split(',')[0].trim()}. The story teaches that ${contextualLesson}. Make it 10 short paragraphs for children ages 2-5. Start with "Once upon a time" and end with "The end. Sweet dreams!"`;
         }
 
         function createIntelligentUniqueStory(character, setting, themes, element) {
@@ -1238,7 +1244,7 @@ Write the complete 10-paragraph story now:
             console.log(`🎪 Story elements: Enhanced ${enhancedElement}, Plot: ${plotTwist}, Characters: ${supportingCharacters.length}`);
             
             // Enhanced template system with more variation
-            const storyVariations = generateMultipleStoryVersions(character, setting, themes, enhancedElement, lesson, plotTwist, supportingCharacters, uniqueChallenge);
+            const storyVariations = generateMultipleStoryVersions(character, setting, themes, enhancedElement, plotTwist, supportingCharacters, uniqueChallenge);
             const selectedStory = getRandomElement(storyVariations);
             
             // Add generation metadata
@@ -1342,7 +1348,7 @@ Write the complete 10-paragraph story now:
                 () => createChallengeOvercomingStory(character, setting, themes, element),
                 () => createSeasonalMagicStory(character, setting, themes, element),
                 // New dynamic story types that use the enhanced elements
-                () => createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge)
+                () => createDynamicStory(character, setting, themes, element, plotTwist, supportingCharacters, uniqueChallenge)
             ];
             
             // Generate multiple versions for variety, preferring the dynamic story
@@ -1350,7 +1356,7 @@ Write the complete 10-paragraph story now:
             let selectedTypes = shuffleArray([...storyTypes]).slice(0, numVersions);
             
             // Ensure the dynamic story is always included for maximum uniqueness
-            const dynamicStory = () => createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge);
+            const dynamicStory = () => createDynamicStory(character, setting, themes, element, plotTwist, supportingCharacters, uniqueChallenge);
             if (!selectedTypes.some(story => story.toString().includes('createDynamicStory'))) {
                 selectedTypes[0] = dynamicStory; // Replace first with dynamic story
             }
@@ -1368,6 +1374,8 @@ Write the complete 10-paragraph story now:
         }
 
         function createDynamicStory(character, setting, themes, element, plotTwist, supportingCharacters, uniqueChallenge) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'dynamic-story');
             const title = `${capitalize(character)} and the ${capitalize(plotTwist.replace(/([a-z])([A-Z])/g, '$1 $2'))}`;
             
             const pages = [
@@ -1389,7 +1397,7 @@ Write the complete 10-paragraph story now:
                 
                 `The ${plotTwist} led to the most amazing celebration the ${setting} had ever seen. All the friends gathered around ${capitalize(character)} and their magical ${element} to share stories and laughter.`,
                 
-                `That night, as ${capitalize(character)} went to sleep holding their ${element}, they smiled knowing that ${lesson}. The ${plotTwist} had brought everyone closer together in the most magical way. The end. Sweet dreams! 🌙✨`
+                `That night, as ${capitalize(character)} went to sleep holding their ${element}, they smiled knowing that ${contextualLesson}. The ${plotTwist} had brought everyone closer together in the most magical way. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
@@ -1489,6 +1497,8 @@ Write the complete 10-paragraph story now:
         }
 
         function createMysteryStory(character, setting, themes, element) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'mystery-solving');
             const mysteries = ['missing rainbow colors', 'disappearing flowers', 'silent music boxes', 'forgotten laughter', 'lost starlight'];
             const mystery = getRandomElement(mysteries);
             const title = `${capitalize(character)} and the Mystery of the ${mystery.split(' ').map(word => capitalize(word)).join(' ')}`;
@@ -1512,13 +1522,15 @@ Write the complete 10-paragraph story now:
                 
                 `${capitalize(character)} learned that sometimes what seems like a problem is really someone asking for help. The ${element} sparkled with approval at this wise discovery.`,
                 
-                `From that day forward, the creature was never lonely again, and ${capitalize(character)} always remembered that ${lesson}. The mystery had brought them all closer together. The end. Sweet dreams! 🌙✨`
+                `From that day forward, the creature was never lonely again, and ${capitalize(character)} always remembered that ${contextualLesson}. The mystery had brought them all closer together. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
         }
 
         function createHelpingStory(character, setting, themes, element) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'helping-others');
             const problems = ['wilted garden', 'broken bridge', 'sad waterfall', 'cold mountain', 'empty playground'];
             const problem = getRandomElement(problems);
             const title = `How ${capitalize(character)} Saved the ${problem.split(' ').map(word => capitalize(word)).join(' ')}`;
@@ -1542,13 +1554,15 @@ Write the complete 10-paragraph story now:
                 
                 `The whole ${setting} celebrated their success with a grand party. Everyone felt proud that they had worked together to help, and their community was stronger than ever.`,
                 
-                `That night, as ${capitalize(character)} fell asleep holding their ${element}, they smiled knowing that ${lesson}. When friends work together, anything is possible. The end. Sweet dreams! 🌙✨`
+                `That night, as ${capitalize(character)} fell asleep holding their ${element}, they smiled knowing that ${contextualLesson}. When friends work together, anything is possible. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
         }
 
         function createMagicalTransformationStory(character, setting, themes, element) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'transformation');
             const transformations = ['could speak all languages', 'grew beautiful wings', 'gained healing powers', 'could make flowers bloom', 'became invisible at will'];
             const transformation = getRandomElement(transformations);
             const title = `The Day ${capitalize(character)} ${transformation.charAt(0).toUpperCase() + transformation.slice(1)}`;
@@ -1572,7 +1586,7 @@ Write the complete 10-paragraph story now:
                 
                 `Even without the magical ability, ${capitalize(character)} continued helping others every day. They realized that the real magic was in their heart, not in special powers.`,
                 
-                `The ${element} glowed warmly, confirming what ${capitalize(character)} had learned: ${lesson}. True magic comes from within, and kindness is the greatest power of all. The end. Sweet dreams! 🌙✨`
+                `The ${element} glowed warmly, confirming what ${capitalize(character)} had learned: ${contextualLesson}. True magic comes from within, and kindness is the greatest power of all. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
@@ -1609,6 +1623,8 @@ Write the complete 10-paragraph story now:
         }
 
         function createCommunityStory(character, setting, themes, element) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'community-building');
             const communityEvents = ['harvest festival', 'star-watching celebration', 'rainbow day', 'friendship fair', 'gratitude gathering'];
             const event = getRandomElement(communityEvents);
             const title = `${capitalize(character)} and the Great ${event.split(' ').map(word => capitalize(word)).join(' ')}`;
@@ -1632,7 +1648,7 @@ Write the complete 10-paragraph story now:
                 
                 `From that day forward, every event in the ${setting} included everyone. The community grew stronger and happier because they learned to value each other's contributions.`,
                 
-                `As the stars came out that night, ${capitalize(character)} felt proud knowing that ${lesson}. The ${event} had brought everyone together in the most magical way. The end. Sweet dreams! 🌙✨`
+                `As the stars came out that night, ${capitalize(character)} felt proud knowing that ${contextualLesson}. The ${event} had brought everyone together in the most magical way. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
@@ -1669,6 +1685,8 @@ Write the complete 10-paragraph story now:
         }
 
         function createSeasonalMagicStory(character, setting, themes, element) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'seasonal-magic');
             const seasons = ['spring awakening', 'summer sunshine', 'autumn harvest', 'winter wonder'];
             const season = getRandomElement(seasons);
             const title = `${capitalize(character)} and the Magic of ${capitalize(season)}`;
@@ -1692,7 +1710,7 @@ Write the complete 10-paragraph story now:
                 
                 `During the celebration, everyone shared what they loved most about ${season} and how they had learned to embrace change with ${themes.split(',')[0].trim()} and support from friends.`,
                 
-                `As the season continued, ${capitalize(character)} kept their ${element} close, knowing that ${lesson}. Each season of life brings new opportunities for love and growth. The end. Sweet dreams! 🌙✨`
+                `As the season continued, ${capitalize(character)} kept their ${element} close, knowing that ${contextualLesson}. Each season of life brings new opportunities for love and growth. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
@@ -1813,6 +1831,8 @@ Write the complete 10-paragraph story now:
         }
 
         function generateStoryElements(character, setting, theme, element) {
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(theme, 'story-elements');
             const openings = [
                 `Once upon a time, in a ${setting}, there lived a ${character} who loved ${getRandomActivity()}. Every morning, they would ${getRandomMorningActivity()} and dream of helping others.`,
                 `In the heart of a magical ${setting}, a kind ${character} spent their days ${getRandomActivity()}. They had a special gift for making everyone around them feel ${getRandomEmotion()}.`,
@@ -1835,7 +1855,7 @@ Write the complete 10-paragraph story now:
                 firstChallenge: generateChallenge(character, setting, theme),
                 meetingFriends: generateFriendMeeting(character, setting),
                 helpingOthers: generateHelpingScene(character, element, theme),
-                learningLesson: generateLessonScene(character, lesson, theme),
+                learningLesson: generateLessonScene(character, contextualLesson, theme),
                 celebration: generateCelebration(character, setting),
                 wisdom: generateWisdom(character, element, theme),
                 ending: generateEnding(character, setting)
@@ -1938,10 +1958,13 @@ Write the complete 10-paragraph story now:
             
             const descriptors = themeDescriptors[primaryTheme] || themeDescriptors['default'];
             
+            // Generate contextual lesson and extract core words
+            const contextualLesson = generateContextualLesson(themes, 'thematic-elements');
+            
             return {
                 primaryTheme,
                 descriptors: shuffleArray([...descriptors]),
-                lessonCore: lesson.split(' ').slice(0, 3).join(' ') // Extract core lesson words
+                lessonCore: contextualLesson.split(' ').slice(0, 3).join(' ') // Extract core lesson words
             };
         }
 
@@ -2386,8 +2409,7 @@ Write the complete 10-paragraph story now:
                 mainCharacter: mainCharacter,
                 setting: setting,
                 mainTheme: mainTheme,
-                specialElement: specialElement,
-                lesson: lesson
+                specialElement: specialElement
             };
             
             document.getElementById('storyContent').innerHTML = `
@@ -2473,7 +2495,7 @@ Write the complete 10-paragraph story now:
         function regeneratePreviewFromCurrent() {
             if (window.currentStoryParams) {
                 const params = window.currentStoryParams;
-                generateStoryPreview(params.mainCharacter, params.setting, params.mainTheme, params.specialElement, params.lesson);
+                generateStoryPreview(params.mainCharacter, params.setting, params.mainTheme, params.specialElement);
             } else {
                 console.error('No story parameters found');
                 showGenerationError();
