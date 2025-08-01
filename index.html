@@ -1152,7 +1152,7 @@ Write the complete 10-paragraph story now:
             ];
             
             const selectedStructure = getRandomElement(storyStructures);
-            const storyLength = getRandomElement([8, 9, 10, 11, 12]); // Vary length
+            const storyLength = 6; // Shorter, focused stories
             
             // Generate unique story elements for this specific story
             const uniqueElements = generateUniqueStoryElements(character, setting, themes, element, lesson, selectedStructure);
@@ -1961,57 +1961,31 @@ Write the complete 10-paragraph story now:
         }
 
         function buildLinearAdventure(elements, length) {
-            // Use the actual character and element names for better readability
             const character = elements.character;
             const element = elements.element;
             const setting = elements.setting;
+            const theme = elements.thematicElements.primaryTheme;
             
-            const openings = [
-                `Once upon a time, in a magical ${setting}, lived a kind ${character} who loved ${elements.personalizedActions[0]}.`,
-                `In the beautiful ${elements.uniqueSettings[0]}, there was a gentle ${character} who enjoyed ${elements.personalizedActions[1]} every day.`,
-                `Deep in the ${setting}, a curious ${character} spent their days exploring and helping others in their community.`
-            ];
-            
-            const developments = [
-                `One sunny morning, the ${character} discovered a special ${element} that sparkled with magical light.`,
-                `While ${elements.personalizedActions[0]}, the ${character} met a ${elements.contextualSupporters[0]} who needed help.`,
-                `The ${character} learned that their ${element} had amazing powers that could help solve problems and bring joy to others.`
-            ];
-            
-            // Create dynamic story ensuring each page is unique
-            const story = [];
-            const usedContent = new Set(); // Track used content to prevent duplicates
-            
-            // Add opening
-            const opening = getRandomElement(openings);
-            story.push(opening);
-            usedContent.add(opening);
-            
-            // Shuffle developments to ensure variety
-            const shuffledDevelopments = shuffleArray([...developments]);
-            let developmentIndex = 0;
-            
-            for (let i = 1; i < length - 1; i++) {
-                let newBeat;
-                let attempts = 0;
+            // Simple 6-page structure: Setup → Discovery → Problem → Solution → Resolution → Ending
+            const story = [
+                // Page 1: Setup - Introduce character and setting
+                `Once upon a time, in a beautiful ${setting}, there lived a kind ${character} who loved helping others and making friends.`,
                 
-                do {
-                    if (i < 3 && developmentIndex < shuffledDevelopments.length) {
-                        // Use each development only once
-                        newBeat = shuffledDevelopments[developmentIndex];
-                        developmentIndex++;
-                    } else {
-                        // Generate unique middle beats
-                        newBeat = generateDynamicMiddleBeat(elements, i, usedContent);
-                    }
-                    attempts++;
-                } while (usedContent.has(newBeat) && attempts < 5);
+                // Page 2: Discovery - Find the magical element
+                `One sunny day, while exploring, the ${character} discovered a special ${element} hidden among the flowers. When they touched it, it began to glow warmly.`,
                 
-                story.push(newBeat);
-                usedContent.add(newBeat);
-            }
-            
-            story.push(generateSatisfyingEnding(elements));
+                // Page 3: Problem - Someone needs help
+                `Soon, the ${character} met a sad little creature who had lost their way home. "Don't worry," said the ${character}, "I'll help you find your family!"`,
+                
+                // Page 4: Solution - Use the element to help
+                `The ${character} held their magical ${element} close and wished to help their new friend. The ${element} glowed brighter and showed them the way home.`,
+                
+                // Page 5: Resolution - Happy outcome and friendship
+                `Together, they found the little creature's family, who were so grateful! The ${character} had made a wonderful new friend and learned that ${theme} brings joy to everyone.`,
+                
+                // Page 6: Ending - Lesson and bedtime
+                `That night, the ${character} fell asleep holding their magical ${element}, happy knowing they had helped someone. Sweet dreams! 🌙✨`
+            ];
             
             return story;
         }
@@ -2062,28 +2036,83 @@ Write the complete 10-paragraph story now:
         }
 
         function buildMysteryStory(elements, length) {
-            // Mystery structure with unique elements
-            return buildLinearAdventure(elements, length); // Simplified for now
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            const theme = elements.thematicElements.primaryTheme;
+            
+            return [
+                `In the ${setting}, everything was usually perfect. But one morning, the ${character} noticed something strange - all the flowers had lost their colors!`,
+                `The ${character} decided to solve this mystery. They found their special ${element} glowing softly, as if it wanted to help find the missing colors.`,
+                `Following the ${element}'s gentle light, the ${character} discovered a sad little creature sitting alone. They had accidentally taken the colors because they felt so gray inside.`,
+                `Instead of being upset, the ${character} sat down with the lonely creature. "Why are you so sad?" they asked with kindness and ${theme}.`,
+                `The creature explained they felt forgotten and invisible. The ${character} shared their ${element}'s warm glow and showed the creature they were special and loved.`,
+                `As the creature's heart filled with joy, all the colors returned to the flowers! The ${character} learned that ${theme} can solve any mystery. The end. Sweet dreams! 🌙✨`
+            ];
         }
 
         function buildFriendshipStory(elements, length) {
-            // Friendship-focused structure
-            return buildLinearAdventure(elements, length); // Simplified for now
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            const theme = elements.thematicElements.primaryTheme;
+            
+            return [
+                `In a peaceful ${setting}, there lived a gentle ${character} who sometimes felt lonely and wished for more friends.`,
+                `One day, the ${character} found a beautiful ${element} that sparkled with rainbow colors. When they picked it up, they heard friendly giggles nearby.`,
+                `Following the sound, the ${character} discovered a shy little creature hiding behind a tree. "Hello," said the ${character} kindly, "would you like to be friends?"`,
+                `The shy creature was so happy to meet someone kind! They played together all day, and the magical ${element} glowed brighter with their laughter.`,
+                `Soon, other creatures came to join them, drawn by the joy and ${theme} they shared. The ${character} realized they had many friends after all.`,
+                `From that day on, the ${character} was never lonely. They learned that ${theme} grows when you share it with others. The end. Sweet dreams! 🌙✨`
+            ];
         }
 
         function buildChallengeStory(elements, length) {
-            // Challenge-overcoming structure
-            return buildLinearAdventure(elements, length); // Simplified for now
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            const theme = elements.thematicElements.primaryTheme;
+            
+            return [
+                `The ${character} lived happily in the ${setting}, but they had one worry that made them feel scared sometimes.`,
+                `One day, while holding their special ${element}, the ${character} met a wise friend who noticed their concern. "Everyone faces challenges," the friend said gently.`,
+                `The wise friend suggested that the ${character} try facing their worry one tiny step at a time, with ${theme} and patience.`,
+                `With their ${element} for courage, the ${character} took the smallest first step. It felt scary, but they discovered they were braver than they thought!`,
+                `Each day, the ${character} took another small step, and their worry grew smaller. Their friends in the ${setting} cheered them on with love.`,
+                `Soon, the ${character} felt proud and confident. They learned that ${theme} and courage can overcome any challenge. The end. Sweet dreams! 🌙✨`
+            ];
         }
 
         function buildDiscoveryStory(elements, length) {
-            // Discovery-focused structure
-            return buildLinearAdventure(elements, length); // Simplified for now
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            const theme = elements.thematicElements.primaryTheme;
+            
+            return [
+                `In a mysterious ${setting}, a curious ${character} loved to explore and discover new wonders every day.`,
+                `While exploring, the ${character} found an ancient ${element} covered in sparkly dust. As soon as they touched it, the world became more magical!`,
+                `The ${element} whispered ancient secrets about the ${setting} and how ${theme} had kept this place beautiful for many years.`,
+                `Excited to learn more, the ${character} discovered that every flower, tree, and creature had a special role in making the magic work.`,
+                `The ${character} helped all the creatures understand their important jobs, and the whole ${setting} became more beautiful than ever before.`,
+                `That night, the ${character} fell asleep knowing they had discovered the greatest secret: ${theme} makes everything magical. The end. Sweet dreams! 🌙✨`
+            ];
         }
 
         function buildCommunityStory(elements, length) {
-            // Community-helping structure
-            return buildLinearAdventure(elements, length); // Simplified for now
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            const theme = elements.thematicElements.primaryTheme;
+            
+            return [
+                `The ${setting} was preparing for a big celebration, and the ${character} was excited to help with their special ${element}.`,
+                `But the ${character} noticed that some creatures looked sad because they didn't know how they could help with the celebration.`,
+                `The ${character} used their ${element} and the power of ${theme} to help everyone find their special way to contribute.`,
+                `A shy mouse became the decorator, a quiet frog became the musician, and every creature found their perfect role in the celebration.`,
+                `The celebration was the most wonderful one ever because everyone felt included and important. The ${setting} sparkled with joy and unity.`,
+                `The ${character} learned that when everyone works together with ${theme}, amazing things happen. The end. Sweet dreams! 🌙✨`
+            ];
         }
 
         function calculateUniquenessScore(story) {
