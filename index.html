@@ -535,14 +535,50 @@
                         <label for="mainCharacter">Main Character:</label>
                         <select id="mainCharacter" name="mainCharacter">
                             <option value="">Choose a character...</option>
-                            <option value="friendly dragon">Friendly Dragon</option>
-                            <option value="talking animal">Talking Animal</option>
-                            <option value="magical fairy">Magical Fairy</option>
-                            <option value="brave knight">Brave Knight</option>
-                            <option value="wise owl">Wise Owl</option>
-                            <option value="playful puppy">Playful Puppy</option>
-                            <option value="curious kitten">Curious Kitten</option>
-                            <option value="gentle giant">Gentle Giant</option>
+                            
+                            <optgroup label="🐾 Animal Friends">
+                                <option value="playful puppy">Playful Puppy</option>
+                                <option value="curious kitten">Curious Kitten</option>
+                                <option value="wise owl">Wise Owl</option>
+                                <option value="friendly bunny">Friendly Bunny</option>
+                                <option value="cheerful bear">Cheerful Bear</option>
+                                <option value="clever fox">Clever Fox</option>
+                                <option value="gentle elephant">Gentle Elephant</option>
+                                <option value="singing bird">Singing Bird</option>
+                                <option value="swimming dolphin">Swimming Dolphin</option>
+                                <option value="dancing butterfly">Dancing Butterfly</option>
+                            </optgroup>
+                            
+                            <optgroup label="🏰 Fantasy Characters">
+                                <option value="friendly dragon">Friendly Dragon</option>
+                                <option value="magical fairy">Magical Fairy</option>
+                                <option value="brave knight">Brave Knight</option>
+                                <option value="kind wizard">Kind Wizard</option>
+                                <option value="gentle giant">Gentle Giant</option>
+                                <option value="magical unicorn">Magical Unicorn</option>
+                                <option value="helpful elf">Helpful Elf</option>
+                                <option value="wise mermaid">Wise Mermaid</option>
+                                <option value="friendly monster">Friendly Monster</option>
+                                <option value="magical phoenix">Magical Phoenix</option>
+                            </optgroup>
+                            
+                            <optgroup label="🌟 Adventure Heroes">
+                                <option value="young explorer">Young Explorer</option>
+                                <option value="space traveler">Space Traveler</option>
+                                <option value="brave pirate">Brave Pirate</option>
+                                <option value="kind superhero">Kind Superhero</option>
+                                <option value="clever detective">Clever Detective</option>
+                                <option value="magical artist">Magical Artist</option>
+                                <option value="gentle scientist">Gentle Scientist</option>
+                                <option value="friendly robot">Friendly Robot</option>
+                            </optgroup>
+                            
+                            <optgroup label="👑 Royal Characters">
+                                <option value="kind princess">Kind Princess</option>
+                                <option value="brave prince">Brave Prince</option>
+                                <option value="wise queen">Wise Queen</option>
+                                <option value="gentle king">Gentle King</option>
+                            </optgroup>
                         </select>
                     </div>
 
@@ -550,43 +586,161 @@
                         <label for="setting">Story Setting:</label>
                         <select id="setting" name="setting">
                             <option value="">Choose a setting...</option>
-                            <option value="enchanted forest">Enchanted Forest</option>
-                            <option value="magical kingdom">Magical Kingdom</option>
-                            <option value="cozy village">Cozy Village</option>
-                            <option value="underwater world">Underwater World</option>
-                            <option value="cloud city">Cloud City</option>
-                            <option value="garden">Beautiful Garden</option>
-                            <option value="treehouse">Magical Treehouse</option>
-                            <option value="farm">Happy Farm</option>
+                            
+                            <optgroup label="🌲 Nature & Outdoors">
+                                <option value="enchanted forest">Enchanted Forest</option>
+                                <option value="beautiful garden">Beautiful Garden</option>
+                                <option value="magical treehouse">Magical Treehouse</option>
+                                <option value="sunny meadow">Sunny Meadow</option>
+                                <option value="mountain peak">Mountain Peak</option>
+                                <option value="peaceful lake">Peaceful Lake</option>
+                                <option value="flower field">Flower Field</option>
+                                <option value="secret cave">Secret Cave</option>
+                            </optgroup>
+                            
+                            <optgroup label="🏰 Fantasy Realms">
+                                <option value="magical kingdom">Magical Kingdom</option>
+                                <option value="fairy village">Fairy Village</option>
+                                <option value="wizard's tower">Wizard's Tower</option>
+                                <option value="dragon's castle">Dragon's Castle</option>
+                                <option value="crystal palace">Crystal Palace</option>
+                                <option value="floating island">Floating Island</option>
+                                <option value="rainbow bridge">Rainbow Bridge</option>
+                            </optgroup>
+                            
+                            <optgroup label="🌊 Water Worlds">
+                                <option value="underwater world">Underwater World</option>
+                                <option value="mermaid lagoon">Mermaid Lagoon</option>
+                                <option value="coral reef">Coral Reef</option>
+                                <option value="pirate ship">Pirate Ship</option>
+                                <option value="lighthouse">Lighthouse</option>
+                                <option value="tropical island">Tropical Island</option>
+                            </optgroup>
+                            
+                            <optgroup label="☁️ Sky & Space">
+                                <option value="cloud city">Cloud City</option>
+                                <option value="space station">Space Station</option>
+                                <option value="moon base">Moon Base</option>
+                                <option value="rainbow realm">Rainbow Realm</option>
+                                <option value="star kingdom">Star Kingdom</option>
+                            </optgroup>
+                            
+                            <optgroup label="🏘️ Cozy Places">
+                                <option value="cozy village">Cozy Village</option>
+                                <option value="happy farm">Happy Farm</option>
+                                <option value="grandmother's house">Grandmother's House</option>
+                                <option value="toy shop">Magical Toy Shop</option>
+                                <option value="library">Enchanted Library</option>
+                                <option value="bakery">Magical Bakery</option>
+                            </optgroup>
+                            
+                            <optgroup label="🎪 Adventure Locations">
+                                <option value="circus tent">Circus Tent</option>
+                                <option value="jungle adventure">Jungle Adventure</option>
+                                <option value="desert oasis">Desert Oasis</option>
+                                <option value="arctic wonderland">Arctic Wonderland</option>
+                                <option value="time machine">Time Machine</option>
+                            </optgroup>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label>Story Themes (select all that apply):</label>
                         <div class="checkbox-group">
+                            <!-- Core Values -->
                             <div class="checkbox-item">
                                 <input type="checkbox" id="friendship" name="themes" value="friendship">
-                                <label for="friendship">Friendship</label>
+                                <label for="friendship">🤝 Friendship</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="kindness" name="themes" value="kindness">
-                                <label for="kindness">Kindness</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="courage" name="themes" value="courage">
-                                <label for="courage">Courage</label>
+                                <label for="kindness">💖 Kindness</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="sharing" name="themes" value="sharing">
-                                <label for="sharing">Sharing</label>
+                                <label for="sharing">🎁 Sharing</label>
                             </div>
                             <div class="checkbox-item">
                                 <input type="checkbox" id="helping" name="themes" value="helping others">
-                                <label for="helping">Helping Others</label>
+                                <label for="helping">🤲 Helping Others</label>
                             </div>
                             <div class="checkbox-item">
+                                <input type="checkbox" id="honesty" name="themes" value="honesty">
+                                <label for="honesty">✨ Honesty</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="gratitude" name="themes" value="gratitude">
+                                <label for="gratitude">🙏 Gratitude</label>
+                            </div>
+                            
+                            <!-- Personal Growth -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="courage" name="themes" value="courage">
+                                <label for="courage">🦁 Courage</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="confidence" name="themes" value="confidence">
+                                <label for="confidence">💪 Confidence</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="patience" name="themes" value="patience">
+                                <label for="patience">⏰ Patience</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="perseverance" name="themes" value="perseverance">
+                                <label for="perseverance">🎯 Never Giving Up</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="creativity" name="themes" value="creativity">
+                                <label for="creativity">🎨 Creativity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="curiosity" name="themes" value="curiosity">
+                                <label for="curiosity">🔍 Curiosity</label>
+                            </div>
+                            
+                            <!-- Social Skills -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="teamwork" name="themes" value="teamwork">
+                                <label for="teamwork">👥 Teamwork</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="inclusion" name="themes" value="inclusion">
+                                <label for="inclusion">🌈 Including Everyone</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="forgiveness" name="themes" value="forgiveness">
+                                <label for="forgiveness">💕 Forgiveness</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="respect" name="themes" value="respect">
+                                <label for="respect">🌟 Respect</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="empathy" name="themes" value="empathy">
+                                <label for="empathy">❤️ Understanding Others</label>
+                            </div>
+                            
+                            <!-- Fun & Adventure -->
+                            <div class="checkbox-item">
                                 <input type="checkbox" id="adventure" name="themes" value="adventure">
-                                <label for="adventure">Adventure</label>
+                                <label for="adventure">🗺️ Adventure</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="discovery" name="themes" value="discovery">
+                                <label for="discovery">🔭 Discovery</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="magic" name="themes" value="magic">
+                                <label for="magic">✨ Magic & Wonder</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="nature" name="themes" value="nature">
+                                <label for="nature">🌿 Love of Nature</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="family" name="themes" value="family">
+                                <label for="family">👨‍👩‍👧‍👦 Family Love</label>
                             </div>
                         </div>
                     </div>
@@ -1186,9 +1340,19 @@ Please write the complete story now:`;
                 'cozy village': ['chimney smoke curls into the sky', 'flower boxes decorate every window', 'friendly neighbors wave hello'],
                 'underwater world': ['colorful coral gardens bloom', 'gentle currents carry happy songs', 'pearl bubbles float to the surface'],
                 'cloud city': ['fluffy pathways stretch endlessly', 'rainbow slides connect the levels', 'star dust sparkles everywhere'],
-                'garden': ['butterfly friends flutter about', 'sweet fragrances fill the air', 'dewdrops sparkle like diamonds'],
-                'treehouse': ['branches sway gently in the breeze', 'bird friends chirp good morning', 'leaves rustle with ancient wisdom'],
-                'farm': ['golden wheat fields wave hello', 'happy animals roam freely', 'the sunset paints the sky in warm colors']
+                'beautiful garden': ['butterfly friends flutter about', 'sweet fragrances fill the air', 'dewdrops sparkle like diamonds'],
+                'magical treehouse': ['branches sway gently in the breeze', 'bird friends chirp good morning', 'leaves rustle with ancient wisdom'],
+                'happy farm': ['golden wheat fields wave hello', 'happy animals roam freely', 'the sunset paints the sky in warm colors'],
+                'space station': ['stars twinkle through the windows', 'friendly robots help with daily tasks', 'zero gravity makes everything magical'],
+                'fairy village': ['tiny houses glow with warm light', 'flower petals serve as fairy beds', 'laughter tinkles like silver bells'],
+                'pirate ship': ['waves dance around the wooden hull', 'colorful flags flutter in the breeze', 'treasure maps lead to friendship'],
+                'circus tent': ['colorful lights create magical patterns', 'happy music plays all day long', 'wonder and joy fill every corner'],
+                'grandmother\'s house': ['warm cookies fill the air with sweetness', 'cozy quilts tell stories of love', 'every room holds magical memories'],
+                'crystal palace': ['rainbow lights dance on crystal walls', 'musical chimes sing in the wind', 'everything sparkles with pure magic'],
+                'jungle adventure': ['exotic birds sing beautiful songs', 'vines create natural swings', 'hidden treasures wait to be discovered'],
+                'moon base': ['Earth looks like a blue marble', 'moon dust sparkles like silver glitter', 'astronaut friends explore together'],
+                'magical bakery': ['sweet aromas dance through the air', 'frosting creates edible rainbows', 'every treat is made with love'],
+                'enchanted library': ['books flutter their pages like wings', 'stories come to life on the shelves', 'knowledge sparkles like fairy dust']
             };
             return getRandomElement(details[setting] || ['magic fills the air', 'wonder awaits around every corner', 'happiness grows like flowers']);
         }
