@@ -1499,6 +1499,15 @@ Please write the complete story now:`;
         }
 
         function displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement, lesson) {
+            // Store the parameters globally so buttons can access them safely
+            window.currentStoryParams = {
+                mainCharacter: mainCharacter,
+                setting: setting,
+                mainTheme: mainTheme,
+                specialElement: specialElement,
+                lesson: lesson
+            };
+            
             document.getElementById('storyContent').innerHTML = `
                 <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #f8f9ff 0%, #e8f4ff 100%); border-radius: 20px; border: 3px solid #5a67d8;">
                     <div style="font-size: 2em; margin-bottom: 20px;">📖</div>
@@ -1516,7 +1525,7 @@ Please write the complete story now:`;
                     </div>
 
                     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 25px;">
-                        <button onclick="generateFullStory('${mainCharacter}', '${setting}', '${mainTheme}', '${specialElement}', '${lesson}')" style="
+                        <button onclick="createFullStoryFromPreview()" style="
                             background: linear-gradient(135deg, #10b981, #059669);
                             color: white;
                             border: none;
@@ -1531,7 +1540,7 @@ Please write the complete story now:`;
                             ✨ Yes! Create This Story ✨
                         </button>
                         
-                        <button onclick="regeneratePreview('${mainCharacter}', '${setting}', '${mainTheme}', '${specialElement}', '${lesson}')" style="
+                        <button onclick="regeneratePreviewFromCurrent()" style="
                             background: linear-gradient(135deg, #f59e0b, #d97706);
                             color: white;
                             border: none;
@@ -1567,6 +1576,26 @@ Please write the complete story now:`;
                     </p>
                 </div>
             `;
+        }
+
+        function createFullStoryFromPreview() {
+            if (window.currentStoryParams) {
+                const params = window.currentStoryParams;
+                generateFullStory(params.mainCharacter, params.setting, params.mainTheme, params.specialElement, params.lesson);
+            } else {
+                console.error('No story parameters found');
+                showGenerationError();
+            }
+        }
+
+        function regeneratePreviewFromCurrent() {
+            if (window.currentStoryParams) {
+                const params = window.currentStoryParams;
+                generateStoryPreview(params.mainCharacter, params.setting, params.mainTheme, params.specialElement, params.lesson);
+            } else {
+                console.error('No story parameters found');
+                showGenerationError();
+            }
         }
 
         async function regeneratePreview(mainCharacter, setting, mainTheme, specialElement, lesson) {
