@@ -863,7 +863,7 @@
         async function createStoryPreview(character, setting, themes, element, lesson) {
             // Create a quick preview using template system (fast and reliable)
             const previewTemplates = [
-                `Once upon a time, a ${character} lived in a magical ${setting}. One day, they discovered a special ${element} that would teach them about ${themes}.`,
+                `Once upon a time, a ${character} lived in a magical ${setting}. One day, they discovered a special ${element} that would teach them about ${themes.split(',')[0].trim()}.`,
                 `In a beautiful ${setting}, there was a kind ${character} who loved helping others. Their adventure began when they found a mysterious ${element}.`,
                 `A gentle ${character} in the ${setting} was about to have the most wonderful adventure. It all started when they stumbled upon a glowing ${element}.`,
                 `Deep in the ${setting}, a curious ${character} was exploring when something amazing happened. They found a magical ${element} that would change everything.`
@@ -888,7 +888,7 @@
         function createFallbackPreview(character, setting, themes, element, lesson) {
             return {
                 title: `The Adventures of ${capitalize(character)}`,
-                preview: `Join a wonderful ${character} on a magical journey through the ${setting}. With the help of a special ${element}, they'll discover the importance of ${themes} and learn that ${lesson}.`,
+                preview: `Join a wonderful ${character} on a magical journey through the ${setting}. With the help of a special ${element}, they'll discover the importance of ${themes.split(',')[0].trim()} and learn that ${lesson}.`,
                 lesson: `This heartwarming tale teaches valuable lessons about kindness and friendship.`,
                 character: character,
                 setting: setting,
@@ -1057,7 +1057,7 @@ STORY REQUIREMENTS:
 ✅ Use simple, age-appropriate language (ages 2-5)
 ✅ Include the magical ${element} prominently
 ✅ Make the ${character} learn that ${lesson}
-✅ Include themes of ${themes} throughout
+✅ Include themes of ${themes.split(',')[0].trim()} throughout
 ✅ End with "The end. Sweet dreams! 🌙✨"
 ✅ Keep it positive, warm, and bedtime-appropriate
 
@@ -1074,7 +1074,7 @@ Write the complete 10-paragraph story now:
         }
 
         function createSimpleStoryPrompt(character, setting, themes, element, lesson) {
-            return `Tell a bedtime story: A ${character} in a ${setting} finds a magical ${element} and learns about ${themes}. The story teaches that ${lesson}. Make it 10 short paragraphs for children ages 2-5. Start with "Once upon a time" and end with "The end. Sweet dreams!"`;
+            return `Tell a bedtime story: A ${character} in a ${setting} finds a magical ${element} and learns about ${themes.split(',')[0].trim()}. The story teaches that ${lesson}. Make it 10 short paragraphs for children ages 2-5. Start with "Once upon a time" and end with "The end. Sweet dreams!"`;
         }
 
         function createAdvancedTemplateStory(character, setting, themes, element, lesson) {
@@ -1106,6 +1106,15 @@ Write the complete 10-paragraph story now:
         }
 
         function addRandomEnhancement(element) {
+            // Check if element already has adjectives to avoid doubling up
+            const commonAdjectives = ['beautiful', 'magic', 'magical', 'sparkling', 'glowing', 'golden', 'silver', 'crystal', 'rainbow', 'ancient', 'mysterious', 'enchanted', 'special'];
+            const hasAdjective = commonAdjectives.some(adj => element.toLowerCase().includes(adj));
+            
+            if (hasAdjective) {
+                // Element already has an adjective, don't add another
+                return element;
+            }
+            
             const enhancements = [
                 'ancient', 'glowing', 'musical', 'color-changing', 'warm', 'sparkling', 
                 'floating', 'singing', 'dancing', 'rainbow-colored', 'crystal', 'golden',
@@ -1213,7 +1222,7 @@ Write the complete 10-paragraph story now:
             const title = `${capitalize(character)} and the ${capitalize(plotTwist)}`;
             
             const pages = [
-                `Once upon a time, in a wonderful ${setting}, lived a ${character} who was known for their ${themes.split(',')[0]}. They had a special ${element} that would soon lead to an amazing ${plotTwist}.`,
+                `Once upon a time, in a wonderful ${setting}, lived a ${character} who was known for ${themes.split(',')[0].trim()}. They had a special ${element} that would soon lead to an amazing ${plotTwist}.`,
                 
                 `One day, while exploring the ${setting}, ${capitalize(character)} met ${supportingCharacters[0] || 'a new friend'}. This friend told them about ${uniqueChallenge} that needed help from someone special.`,
                 
@@ -1227,7 +1236,7 @@ Write the complete 10-paragraph story now:
                 
                 `As they worked, something wonderful happened - their ${plotTwist} attracted ${supportingCharacters[2] || 'more friends'} who wanted to help too. Soon, the whole ${setting} was involved!`,
                 
-                `Everyone in the ${setting} contributed their unique talents to help with ${uniqueChallenge}. ${capitalize(character)} discovered that true ${themes} means bringing out the best in everyone.`,
+                `Everyone in the ${setting} contributed their unique talents to help with ${uniqueChallenge}. ${capitalize(character)} discovered that ${themes.split(',')[0].trim()} means bringing out the best in everyone.`,
                 
                 `The ${plotTwist} led to the most amazing celebration the ${setting} had ever seen. All the friends gathered around ${capitalize(character)} and their magical ${element} to share stories and laughter.`,
                 
@@ -1256,7 +1265,7 @@ Write the complete 10-paragraph story now:
                 
                 `When the ${character} gently touched the ${element}, it began to sparkle with rainbow colors. "Hello, kind friend," whispered a magical voice. "I have been waiting for someone special like you."`,
                 
-                `The magical ${element} told the ${character} about creatures in the ${setting} who needed help. "Will you use my magic to spread ${themes} wherever you go?" it asked.`,
+                `The magical ${element} told the ${character} about creatures in the ${setting} who needed help. "Will you use my magic to spread ${themes.split(',')[0].trim()} wherever you go?" it asked.`,
                 
                 `The ${character} nodded eagerly. Together, they set off to find the first friend who needed help. Soon they met a sad little rabbit who had lost their way home.`,
                 
@@ -1312,7 +1321,7 @@ Write the complete 10-paragraph story now:
                 
                 `As soon as the ${character} lifted the ${element}, the world around them became more magical. Colors seemed brighter, sounds became music, and they could sense the happiness of all living things.`,
                 
-                `The ${element} whispered ancient secrets about the ${setting}. It told stories of how ${themes} had kept this magical place safe and beautiful for countless years.`,
+                `The ${element} whispered ancient secrets about the ${setting}. It told stories of how ${themes.split(',')[0].trim()} had kept this magical place safe and beautiful for countless years.`,
                 
                 `Excited to learn more, the ${character} began to explore with new eyes. They discovered that every flower, tree, and creature in the ${setting} had its own special role in making the magic work.`,
                 
@@ -1372,9 +1381,9 @@ Write the complete 10-paragraph story now:
                 
                 `Remembering their magical ${element}, ${capitalize(character)} held it close and made a wish. The ${element} began to glow, showing that it was ready to help with this important mission.`,
                 
-                `But the ${element} couldn't work alone. It needed the power of ${themes} to be truly effective. ${capitalize(character)} realized they needed to gather all their friends to help.`,
+                `But the ${element} couldn't work alone. It needed the power of ${themes.split(',')[0].trim()} to be truly effective. ${capitalize(character)} realized they needed to gather all their friends to help.`,
                 
-                `One by one, ${capitalize(character)} visited each friend in the ${setting}. They explained the problem and asked everyone to work together, showing what true ${themes} means.`,
+                `One by one, ${capitalize(character)} visited each friend in the ${setting}. They explained the problem and asked everyone to work together, showing what ${themes.split(',')[0].trim()} truly means.`,
                 
                 `All the friends agreed to help! A wise owl brought knowledge, a strong bear brought courage, a gentle rabbit brought kindness, and many others brought their special gifts.`,
                 
@@ -1428,13 +1437,13 @@ Write the complete 10-paragraph story now:
             const pages = [
                 `While exploring the ${setting}, ${capitalize(character)} discovered that their ${element} had a very special secret - it could travel through time! With a gentle touch, they were whisked away to ${destination}.`,
                 
-                `Everything in this time was different but wonderful. ${capitalize(character)} met creatures they'd never seen before, all living peacefully and showing incredible ${themes}.`,
+                `Everything in this time was different but wonderful. ${capitalize(character)} met creatures they'd never seen before, all living peacefully and showing incredible ${themes.split(',')[0].trim()}.`,
                 
-                `The creatures of this time period were curious about ${capitalize(character)} and their stories. They shared their own wisdom about ${themes} and how it made their world beautiful.`,
+                `The creatures of this time period were curious about ${capitalize(character)} and their stories. They shared their own wisdom about ${themes.split(',')[0].trim()} and how it made their world beautiful.`,
                 
-                `${capitalize(character)} learned amazing things about how the ${setting} had changed over time. Each era had its own special magic, but the most important thing - ${themes} - remained constant.`,
+                `${capitalize(character)} learned amazing things about how the ${setting} had changed over time. Each era had its own special magic, but the most important thing - ${themes.split(',')[0].trim()} - remained constant.`,
                 
-                `In this time, ${capitalize(character)} helped solve a problem that the ancient creatures couldn't handle alone. Their modern knowledge combined with timeless ${themes} saved the day.`,
+                `In this time, ${capitalize(character)} helped solve a problem that the ancient creatures couldn't handle alone. Their modern knowledge combined with timeless ${themes.split(',')[0].trim()} saved the day.`,
                 
                 `The grateful creatures taught ${capitalize(character)} an important lesson that had been passed down through all of time: ${lesson}. This wisdom was more valuable than any treasure.`,
                 
@@ -1442,7 +1451,7 @@ Write the complete 10-paragraph story now:
                 
                 `Back in their own time in the ${setting}, ${capitalize(character)} saw everything with new eyes. They understood how their actions today would affect the future, just like the past affected them.`,
                 
-                `${capitalize(character)} began sharing the ancient wisdom with all their friends. The timeless lesson about ${themes} spread throughout the ${setting}, making everyone happier.`,
+                `${capitalize(character)} began sharing the ancient wisdom with all their friends. The timeless lesson about ${themes.split(',')[0].trim()} spread throughout the ${setting}, making everyone happier.`,
                 
                 `Every night, ${capitalize(character)} looked at their ${element} and remembered the incredible journey through time. They knew that ${lesson}, no matter when or where you are. The end. Sweet dreams! 🌙✨`
             ];
@@ -1460,7 +1469,7 @@ Write the complete 10-paragraph story now:
                 
                 `But as the preparations began, ${capitalize(character)} noticed that some creatures seemed sad and left out. They weren't sure how they could contribute to the ${event}.`,
                 
-                `${capitalize(character)} remembered what ${themes} truly means and decided to help everyone feel included. They used their ${element} to bring all the creatures together.`,
+                `${capitalize(character)} remembered what ${themes.split(',')[0].trim()} truly means and decided to help everyone feel included. They used their ${element} to bring all the creatures together.`,
                 
                 `"Everyone has something special to offer," said ${capitalize(character)}. They helped each creature discover their unique talents and find their perfect role in the ${event}.`,
                 
@@ -1490,7 +1499,7 @@ Write the complete 10-paragraph story now:
                 
                 `One day, while holding their special ${element}, ${capitalize(character)} met a wise friend who noticed their struggle. "Everyone faces challenges," the friend said kindly.`,
                 
-                `The wise friend explained that ${themes} includes being patient and kind with yourself. They suggested that ${capitalize(character)} try facing their challenge one small step at a time.`,
+                `The wise friend explained that ${themes.split(',')[0].trim()} includes being patient and kind with yourself. They suggested that ${capitalize(character)} try facing their challenge one small step at a time.`,
                 
                 `${capitalize(character)} decided to be brave and try. With their ${element} for comfort and courage, they took the tiniest first step toward overcoming their ${challenge}.`,
                 
@@ -1498,7 +1507,7 @@ Write the complete 10-paragraph story now:
                 
                 `Soon, other creatures in the ${setting} shared that they had challenges too. ${capitalize(character)} realized they weren't alone and that sharing struggles with friends helps a lot.`,
                 
-                `Together, all the friends supported each other through their various challenges. They learned that practicing ${themes} means encouraging others just as much as helping yourself.`,
+                `Together, all the friends supported each other through their various challenges. They learned that practicing ${themes.split(',')[0].trim()} means encouraging others just as much as helping yourself.`,
                 
                 `Day by day, ${capitalize(character)} grew stronger and more confident. Their ${challenge} didn't disappear completely, but it no longer controlled their life or happiness.`,
                 
@@ -1520,19 +1529,19 @@ Write the complete 10-paragraph story now:
                 
                 `Each season brought different gifts to the ${setting}. This time, ${capitalize(character)} discovered they could help spread the seasonal magic to everyone around them.`,
                 
-                `Some creatures in the ${setting} were struggling to adapt to the seasonal changes. ${capitalize(character)} used the power of ${themes} and their ${element} to help them.`,
+                `Some creatures in the ${setting} were struggling to adapt to the seasonal changes. ${capitalize(character)} used the power of ${themes.split(',')[0].trim()} and their ${element} to help them.`,
                 
                 `Working together, ${capitalize(character)} and their friends learned to celebrate what made each season special while helping those who found change difficult.`,
                 
-                `The ${element} taught ${capitalize(character)} that just like seasons, life has different phases, and each one brings its own beauty and opportunities for ${themes}.`,
+                `The ${element} taught ${capitalize(character)} that just like seasons, life has different phases, and each one brings its own beauty and opportunities for ${themes.split(',')[0].trim()}.`,
                 
-                `Through acts of kindness and ${themes}, ${capitalize(character)} helped everyone in the ${setting} find joy in the seasonal changes and what they brought.`,
+                `Through acts of kindness and ${themes.split(',')[0].trim()}, ${capitalize(character)} helped everyone in the ${setting} find joy in the seasonal changes and what they brought.`,
                 
                 `As the season progressed, the ${setting} became more beautiful than ever. Every creature had learned to appreciate the special gifts that ${season} offered.`,
                 
-                `${capitalize(character)} organized a celebration to honor the season and all the ways their community had grown together through change and ${themes}.`,
+                `${capitalize(character)} organized a celebration to honor the season and all the ways their community had grown together through change and ${themes.split(',')[0].trim()}.`,
                 
-                `During the celebration, everyone shared what they loved most about ${season} and how they had learned to embrace change with ${themes} and support from friends.`,
+                `During the celebration, everyone shared what they loved most about ${season} and how they had learned to embrace change with ${themes.split(',')[0].trim()} and support from friends.`,
                 
                 `As the season continued, ${capitalize(character)} kept their ${element} close, knowing that ${lesson}. Each season of life brings new opportunities for love and growth. The end. Sweet dreams! 🌙✨`
             ];
