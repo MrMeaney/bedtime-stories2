@@ -824,10 +824,6 @@
                         <input type="text" id="specialElement" name="specialElement" placeholder="e.g., magic wand, flying carpet, talking tree">
                     </div>
 
-                    <div class="form-group">
-                        <label for="lesson">What lesson should the story teach?</label>
-                        <textarea id="lesson" name="lesson" placeholder="e.g., It's important to be kind to others, or sharing makes everyone happy"></textarea>
-                    </div>
 
                     <button type="submit" class="generate-btn">✨ Create My Story ✨</button>
                 </form>
@@ -879,7 +875,6 @@
             const mainCharacter = formData.get('mainCharacter') || 'friendly dragon';
             const setting = formData.get('setting') || 'enchanted forest';
             const specialElement = formData.get('specialElement') || 'magic star';
-            const lesson = formData.get('lesson') || 'being kind to others makes the world a better place';
             
             const themes = [];
             document.querySelectorAll('input[name="themes"]:checked').forEach(checkbox => {
@@ -888,33 +883,33 @@
             const mainTheme = themes.length > 0 ? themes.join(', ') : 'friendship';
 
             // First, generate and show preview
-            await generateStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
+            await generateStoryPreview(mainCharacter, setting, mainTheme, specialElement);
         }
 
-        async function generateStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson) {
+        async function generateStoryPreview(mainCharacter, setting, mainTheme, specialElement) {
             // Show preview loading state
             showPreviewLoading();
 
             try {
                 // Generate quick preview
-                const previewData = await createStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
-                displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement, lesson);
+                const previewData = await createStoryPreview(mainCharacter, setting, mainTheme, specialElement);
+                displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement);
             } catch (error) {
                 console.log('Preview generation failed:', error);
                 // Show fallback preview
-                const fallbackPreview = createFallbackPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
-                displayStoryPreview(fallbackPreview, mainCharacter, setting, mainTheme, specialElement, lesson);
+                const fallbackPreview = createFallbackPreview(mainCharacter, setting, mainTheme, specialElement);
+                displayStoryPreview(fallbackPreview, mainCharacter, setting, mainTheme, specialElement);
             }
         }
 
-        async function generateFullStory(mainCharacter, setting, mainTheme, specialElement, lesson) {
+        async function generateFullStory(mainCharacter, setting, mainTheme, specialElement) {
             // Show enhanced loading state with progress
             showLoadingProgress();
 
             try {
                 updateLoadingMessage('Creating your full magical story...');
                 // Try AI generation first
-                const story = await createAIStory(mainCharacter, setting, mainTheme, specialElement, lesson);
+                const story = await createAIStory(mainCharacter, setting, mainTheme, specialElement);
                 updateLoadingMessage('✨ Story generated successfully! ✨');
                 setTimeout(() => displayStory(story), 500);
             } catch (error) {
@@ -923,7 +918,7 @@
                 // Enhanced fallback to advanced template system
                 setTimeout(() => {
                     try {
-                        const story = createAdvancedTemplateStory(mainCharacter, setting, mainTheme.split(',')[0], specialElement, lesson);
+                        const story = createAdvancedTemplateStory(mainCharacter, setting, mainTheme.split(',')[0], specialElement);
                         updateLoadingMessage('✨ Your magical story is ready! ✨');
                         setTimeout(() => displayStory(story), 500);
                     } catch (fallbackError) {
@@ -934,7 +929,7 @@
             }
         }
 
-        async function createStoryPreview(character, setting, themes, element, lesson) {
+        async function createStoryPreview(character, setting, themes, element) {
             // Create a quick preview using template system (fast and reliable)
             const previewTemplates = [
                 `Once upon a time, a ${character} lived in a magical ${setting}. One day, they discovered a special ${element} that would teach them about ${themes.split(',')[0].trim()}.`,
@@ -946,8 +941,9 @@
             const preview = getRandomElement(previewTemplates);
             const title = `${capitalize(character)} and the Magic of ${formatSettingForTitle(setting)}`;
             
-            // Add lesson hint
-            const lessonHint = `This story will teach that ${lesson}.`;
+            // Generate contextual lesson
+            const contextualLesson = generateContextualLesson(themes, 'linear-adventure');
+            const lessonHint = `This story will teach that ${contextualLesson}.`;
             
             return {
                 title: title,
@@ -959,10 +955,10 @@
             };
         }
 
-        function createFallbackPreview(character, setting, themes, element, lesson) {
+        function createFallbackPreview(character, setting, themes, element) {
             return {
                 title: `The Adventures of ${capitalize(character)}`,
-                preview: `Join a wonderful ${character} on a magical journey through the ${setting}. With the help of a special ${element}, they'll discover the importance of ${themes.split(',')[0].trim()} and learn that ${lesson}.`,
+                preview: `Join a wonderful ${character} on a magical journey through the ${setting}. With the help of a special ${element}, they'll discover the importance of ${themes.split(',')[0].trim()}.`,
                 lesson: `This heartwarming tale teaches valuable lessons about kindness and friendship.`,
                 character: character,
                 setting: setting,
@@ -970,18 +966,18 @@
             };
         }
 
-        async function createAIStory(character, setting, themes, element, lesson) {
+        async function createAIStory(character, setting, themes, element) {
             console.log('🤖 Starting AI story generation for:', character, 'in', setting);
             
             // Try multiple AI services for better reliability
             const services = [
-                { name: 'OpenAI Compatible', func: () => tryOpenAICompatibleAPI(character, setting, themes, element, lesson) },
-                { name: 'Hugging Face', func: () => tryHuggingFaceAPI(character, setting, themes, element, lesson) },
-                { name: 'Advanced Template', func: () => tryLocalAIGeneration(character, setting, themes, element, lesson) }
+                { name: 'OpenAI Compatible', func: () => tryOpenAICompatibleAPI(character, setting, themes, element) },
+                { name: 'Hugging Face', func: () => tryHuggingFaceAPI(character, setting, themes, element) },
+                { name: 'Advanced Template', func: () => tryLocalAIGeneration(character, setting, themes, element) }
             ];
             
             // Use our new intelligent system instead of unreliable external APIs
-            const uniqueStory = createIntelligentUniqueStory(character, setting, themes, element, lesson);
+            const uniqueStory = createIntelligentUniqueStory(character, setting, themes, element);
             
             // Simulate AI processing time for better UX
             await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
@@ -990,7 +986,7 @@
             return uniqueStory;
         }
 
-        async function tryOpenAICompatibleAPI(character, setting, themes, element, lesson) {
+        async function tryOpenAICompatibleAPI(character, setting, themes, element) {
             // Try free OpenAI-compatible APIs
             const endpoints = [
                 'https://api.openai.com/v1/chat/completions', // If user has API key
@@ -998,7 +994,7 @@
                 'https://api.together.xyz/v1/chat/completions' // Together AI (free tier)
             ];
             
-            const prompt = createEnhancedStoryPrompt(character, setting, themes, element, lesson);
+            const prompt = createEnhancedStoryPrompt(character, setting, themes, element);
             
             for (const endpoint of endpoints) {
                 try {
@@ -1043,7 +1039,7 @@
             throw new Error('OpenAI-compatible APIs failed');
         }
 
-        async function tryHuggingFaceAPI(character, setting, themes, element, lesson) {
+        async function tryHuggingFaceAPI(character, setting, themes, element) {
             // Use better models for story generation
             const models = [
                 "microsoft/DialoGPT-medium",
@@ -1051,7 +1047,7 @@
                 "microsoft/DialoGPT-small"
             ];
             
-            const prompt = createSimpleStoryPrompt(character, setting, themes, element, lesson);
+            const prompt = createSimpleStoryPrompt(character, setting, themes, element);
             
             for (const model of models) {
                 try {
@@ -1090,12 +1086,12 @@
             throw new Error('Hugging Face models failed');
         }
 
-        async function tryLocalAIGeneration(character, setting, themes, element, lesson) {
+        async function tryLocalAIGeneration(character, setting, themes, element) {
             // Advanced template-based generation with more variation
-            return createAdvancedTemplateStory(character, setting, themes, element, lesson);
+            return createAdvancedTemplateStory(character, setting, themes, element);
         }
 
-        function createEnhancedStoryPrompt(character, setting, themes, element, lesson) {
+        function createEnhancedStoryPrompt(character, setting, themes, element) {
             const storyStyles = [
                 'adventure where the character goes on a journey',
                 'mystery where something needs to be solved',
@@ -1137,11 +1133,11 @@ Write the complete 10-paragraph story now:
 1.`;
         }
 
-        function createSimpleStoryPrompt(character, setting, themes, element, lesson) {
+        function createSimpleStoryPrompt(character, setting, themes, element) {
             return `Tell a bedtime story: A ${character} in a ${setting} finds a magical ${element} and learns about ${themes.split(',')[0].trim()}. The story teaches that ${lesson}. Make it 10 short paragraphs for children ages 2-5. Start with "Once upon a time" and end with "The end. Sweet dreams!"`;
         }
 
-        function createIntelligentUniqueStory(character, setting, themes, element, lesson) {
+        function createIntelligentUniqueStory(character, setting, themes, element) {
             console.log('🧠 Creating highly unique story with advanced randomization...');
             
             // Create exponentially more unique stories by randomizing structure itself
@@ -1154,8 +1150,11 @@ Write the complete 10-paragraph story now:
             const selectedStructure = getRandomElement(storyStructures);
             const storyLength = 6; // Shorter, focused stories
             
+            // Generate contextual lesson based on theme and story type
+            const contextualLesson = generateContextualLesson(themes, selectedStructure);
+            
             // Generate unique story elements for this specific story
-            const uniqueElements = generateUniqueStoryElements(character, setting, themes, element, lesson, selectedStructure);
+            const uniqueElements = generateUniqueStoryElements(character, setting, themes, element, contextualLesson, selectedStructure);
             
             // Create story using micro-templates that can be mixed differently each time
             const story = buildDynamicNarrative(uniqueElements, storyLength, selectedStructure, character, setting, element);
@@ -1171,7 +1170,7 @@ Write the complete 10-paragraph story now:
             };
         }
 
-        function generateUniqueStoryElements(character, setting, themes, element, lesson, structure) {
+        function generateUniqueStoryElements(character, setting, themes, element, structure) {
             // Create elements that are contextually unique to this specific story
             const emotionalArc = getRandomElement(['hopeful-to-joyful', 'curious-to-wise', 'worried-to-confident', 'lonely-to-connected']);
             const pacing = getRandomElement(['steady', 'building', 'episodic', 'climactic']);
@@ -1195,7 +1194,7 @@ Write the complete 10-paragraph story now:
                 magicalMoments,
                 uniqueSettings: generateUniqueLocations(setting),
                 personalizedActions: generatePersonalizedActions(character, themes),
-                thematicElements: extractThematicElements(themes, lesson)
+                thematicElements: extractThematicElements(themes)
             };
         }
 
@@ -1227,7 +1226,7 @@ Write the complete 10-paragraph story now:
             };
         }
 
-        function createAdvancedTemplateStory(character, setting, themes, element, lesson) {
+        function createAdvancedTemplateStory(character, setting, themes, element) {
             console.log('🎲 Creating advanced template story with dynamic elements...');
             
             // Add more randomization by mixing story elements
@@ -1326,22 +1325,22 @@ Write the complete 10-paragraph story now:
             return getRandomElement(possibleChallenges);
         }
 
-        function generateMultipleStoryVersions(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge) {
+        function generateMultipleStoryVersions(character, setting, themes, element, plotTwist, supportingCharacters, uniqueChallenge) {
             console.log('📚 Generating template story variations with dynamic elements...');
             const versions = [];
             
             // Create many more unique story types with enhanced parameters
             const storyTypes = [
-                () => createClassicAdventureStory(character, setting, themes, element, lesson),
-                () => createFriendshipStory(character, setting, themes, element, lesson),
-                () => createDiscoveryStory(character, setting, themes, element, lesson),
-                () => createMysteryStory(character, setting, themes, element, lesson),
-                () => createHelpingStory(character, setting, themes, element, lesson),
-                () => createMagicalTransformationStory(character, setting, themes, element, lesson),
-                () => createTimeAdventureStory(character, setting, themes, element, lesson),
-                () => createCommunityStory(character, setting, themes, element, lesson),
-                () => createChallengeOvercomingStory(character, setting, themes, element, lesson),
-                () => createSeasonalMagicStory(character, setting, themes, element, lesson),
+                () => createClassicAdventureStory(character, setting, themes, element),
+                () => createFriendshipStory(character, setting, themes, element),
+                () => createDiscoveryStory(character, setting, themes, element),
+                () => createMysteryStory(character, setting, themes, element),
+                () => createHelpingStory(character, setting, themes, element),
+                () => createMagicalTransformationStory(character, setting, themes, element),
+                () => createTimeAdventureStory(character, setting, themes, element),
+                () => createCommunityStory(character, setting, themes, element),
+                () => createChallengeOvercomingStory(character, setting, themes, element),
+                () => createSeasonalMagicStory(character, setting, themes, element),
                 // New dynamic story types that use the enhanced elements
                 () => createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge)
             ];
@@ -1368,7 +1367,7 @@ Write the complete 10-paragraph story now:
             return versions;
         }
 
-        function createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge) {
+        function createDynamicStory(character, setting, themes, element, plotTwist, supportingCharacters, uniqueChallenge) {
             const title = `${capitalize(character)} and the ${capitalize(plotTwist.replace(/([a-z])([A-Z])/g, '$1 $2'))}`;
             
             const pages = [
@@ -1405,7 +1404,7 @@ Write the complete 10-paragraph story now:
             return shuffled;
         }
 
-        function createClassicAdventureStory(character, setting, themes, element, lesson) {
+        function createClassicAdventureStory(character, setting, themes, element) {
             const title = `The ${capitalize(character)}'s Magical Adventure`;
             
             const pages = [
@@ -1433,7 +1432,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createFriendshipStory(character, setting, themes, element, lesson) {
+        function createFriendshipStory(character, setting, themes, element) {
             const title = `${capitalize(character)} and the Circle of Friends`;
             
             const pages = [
@@ -1461,7 +1460,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createDiscoveryStory(character, setting, themes, element, lesson) {
+        function createDiscoveryStory(character, setting, themes, element) {
             const title = `${capitalize(character)} and the Secret of ${formatSettingForTitle(setting)}`;
             
             const pages = [
@@ -1489,7 +1488,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createMysteryStory(character, setting, themes, element, lesson) {
+        function createMysteryStory(character, setting, themes, element) {
             const mysteries = ['missing rainbow colors', 'disappearing flowers', 'silent music boxes', 'forgotten laughter', 'lost starlight'];
             const mystery = getRandomElement(mysteries);
             const title = `${capitalize(character)} and the Mystery of the ${mystery.split(' ').map(word => capitalize(word)).join(' ')}`;
@@ -1519,7 +1518,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createHelpingStory(character, setting, themes, element, lesson) {
+        function createHelpingStory(character, setting, themes, element) {
             const problems = ['wilted garden', 'broken bridge', 'sad waterfall', 'cold mountain', 'empty playground'];
             const problem = getRandomElement(problems);
             const title = `How ${capitalize(character)} Saved the ${problem.split(' ').map(word => capitalize(word)).join(' ')}`;
@@ -1549,7 +1548,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createMagicalTransformationStory(character, setting, themes, element, lesson) {
+        function createMagicalTransformationStory(character, setting, themes, element) {
             const transformations = ['could speak all languages', 'grew beautiful wings', 'gained healing powers', 'could make flowers bloom', 'became invisible at will'];
             const transformation = getRandomElement(transformations);
             const title = `The Day ${capitalize(character)} ${transformation.charAt(0).toUpperCase() + transformation.slice(1)}`;
@@ -1579,7 +1578,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createTimeAdventureStory(character, setting, themes, element, lesson) {
+        function createTimeAdventureStory(character, setting, themes, element) {
             const timeDestinations = ['ancient past when dinosaurs were gentle', 'future where everyone flew on clouds', 'time when the ${setting} was just being born', 'magical era of the first ${element}'];
             const destination = getRandomElement(timeDestinations);
             const title = `${capitalize(character)}'s Journey Through Time`;
@@ -1609,7 +1608,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createCommunityStory(character, setting, themes, element, lesson) {
+        function createCommunityStory(character, setting, themes, element) {
             const communityEvents = ['harvest festival', 'star-watching celebration', 'rainbow day', 'friendship fair', 'gratitude gathering'];
             const event = getRandomElement(communityEvents);
             const title = `${capitalize(character)} and the Great ${event.split(' ').map(word => capitalize(word)).join(' ')}`;
@@ -1639,7 +1638,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createChallengeOvercomingStory(character, setting, themes, element, lesson) {
+        function createChallengeOvercomingStory(character, setting, themes, element) {
             const challenges = ['fear of heights', 'shyness around others', 'difficulty with a new skill', 'worry about being different', 'trouble making decisions'];
             const challenge = getRandomElement(challenges);
             const title = `How ${capitalize(character)} Overcame Their ${capitalize(challenge)}`;
@@ -1669,7 +1668,7 @@ Write the complete 10-paragraph story now:
             return { title, pages };
         }
 
-        function createSeasonalMagicStory(character, setting, themes, element, lesson) {
+        function createSeasonalMagicStory(character, setting, themes, element) {
             const seasons = ['spring awakening', 'summer sunshine', 'autumn harvest', 'winter wonder'];
             const season = getRandomElement(seasons);
             const title = `${capitalize(character)} and the Magic of ${capitalize(season)}`;
@@ -1793,8 +1792,8 @@ Write the complete 10-paragraph story now:
             return getRandomElement(titleTemplates);
         }
 
-        function createPersonalizedStory(character, setting, theme, element, lesson) {
-            const storyElements = generateStoryElements(character, setting, theme, element, lesson);
+        function createPersonalizedStory(character, setting, theme, element) {
+            const storyElements = generateStoryElements(character, setting, theme, element);
             const storyTitle = storyElements.title;
             
             const pages = [
@@ -1813,7 +1812,7 @@ Write the complete 10-paragraph story now:
             return { title: storyTitle, pages: pages, character: character, setting: setting };
         }
 
-        function generateStoryElements(character, setting, theme, element, lesson) {
+        function generateStoryElements(character, setting, theme, element) {
             const openings = [
                 `Once upon a time, in a ${setting}, there lived a ${character} who loved ${getRandomActivity()}. Every morning, they would ${getRandomMorningActivity()} and dream of helping others.`,
                 `In the heart of a magical ${setting}, a kind ${character} spent their days ${getRandomActivity()}. They had a special gift for making everyone around them feel ${getRandomEmotion()}.`,
@@ -1927,7 +1926,7 @@ Write the complete 10-paragraph story now:
             ]);
         }
 
-        function extractThematicElements(themes, lesson) {
+        function extractThematicElements(themes) {
             const primaryTheme = themes.split(',')[0].trim();
             const themeDescriptors = {
                 'helping others': ['kindness', 'generosity', 'caring'],
@@ -2118,6 +2117,56 @@ Write the complete 10-paragraph story now:
         function calculateUniquenessScore(story) {
             // Simple uniqueness calculation based on varied elements used
             return Math.floor(Math.random() * 30) + 70; // 70-100% uniqueness
+        }
+
+        function generateContextualLesson(themes, storyType) {
+            const primaryTheme = themes.split(',')[0].trim();
+            
+            const lessonTemplates = {
+                'helping others': {
+                    'linear-adventure': 'helping others brings joy to everyone',
+                    'friendship-building': 'when we help others, we make wonderful friends',
+                    'community-helping': 'working together makes our community stronger',
+                    'challenge-overcome': 'helping others gives us courage to face our own challenges',
+                    'default': 'kindness and helping others makes the world a better place'
+                },
+                'friendship': {
+                    'friendship-building': 'true friendship grows when we share kindness',
+                    'community-helping': 'friends support each other in everything they do',
+                    'challenge-overcome': 'good friends help us be brave and confident',
+                    'linear-adventure': 'making friends makes every adventure more fun',
+                    'default': 'friendship is one of life\'s greatest treasures'
+                },
+                'being brave': {
+                    'challenge-overcome': 'being brave means trying even when we feel scared',
+                    'linear-adventure': 'courage helps us help others and explore new places',
+                    'mystery-solving': 'being brave helps us solve problems and help others',
+                    'default': 'true bravery comes from caring about others'
+                },
+                'sharing': {
+                    'community-helping': 'sharing makes everyone feel included and happy',
+                    'friendship-building': 'sharing our toys and kindness helps us make friends',
+                    'linear-adventure': 'sharing makes adventures more fun for everyone',
+                    'default': 'when we share, everyone has more joy'
+                },
+                'being kind': {
+                    'mystery-solving': 'kindness can solve problems better than anything else',
+                    'friendship-building': 'kindness is the best way to make new friends',
+                    'challenge-overcome': 'being kind to ourselves helps us grow stronger',
+                    'default': 'kindness makes the world more magical'
+                },
+                'default': {
+                    'linear-adventure': 'helping others brings happiness to everyone',
+                    'friendship-building': 'making friends fills our hearts with joy',
+                    'mystery-solving': 'understanding and kindness solve most problems',
+                    'community-helping': 'working together makes amazing things happen',
+                    'challenge-overcome': 'we can overcome anything with courage and friendship',
+                    'default': 'love and kindness make every day special'
+                }
+            };
+            
+            const themeGroup = lessonTemplates[primaryTheme] || lessonTemplates['default'];
+            return themeGroup[storyType] || themeGroup['default'];
         }
 
         function getRandomElement(array) {
@@ -2331,7 +2380,7 @@ Write the complete 10-paragraph story now:
             `;
         }
 
-        function displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement, lesson) {
+        function displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement) {
             // Store the parameters globally so buttons can access them safely
             window.currentStoryParams = {
                 mainCharacter: mainCharacter,
@@ -2414,7 +2463,7 @@ Write the complete 10-paragraph story now:
         function createFullStoryFromPreview() {
             if (window.currentStoryParams) {
                 const params = window.currentStoryParams;
-                generateFullStory(params.mainCharacter, params.setting, params.mainTheme, params.specialElement, params.lesson);
+                generateFullStory(params.mainCharacter, params.setting, params.mainTheme, params.specialElement);
             } else {
                 console.error('No story parameters found');
                 showGenerationError();
@@ -2431,8 +2480,8 @@ Write the complete 10-paragraph story now:
             }
         }
 
-        async function regeneratePreview(mainCharacter, setting, mainTheme, specialElement, lesson) {
-            await generateStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
+        async function regeneratePreview(mainCharacter, setting, mainTheme, specialElement) {
+            await generateStoryPreview(mainCharacter, setting, mainTheme, specialElement);
         }
 
         function showStoryForm() {
