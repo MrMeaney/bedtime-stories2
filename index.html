@@ -659,11 +659,32 @@
             });
             const mainTheme = themes.length > 0 ? themes.join(', ') : 'friendship';
 
+            // First, generate and show preview
+            await generateStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
+        }
+
+        async function generateStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson) {
+            // Show preview loading state
+            showPreviewLoading();
+
+            try {
+                // Generate quick preview
+                const previewData = await createStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
+                displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement, lesson);
+            } catch (error) {
+                console.log('Preview generation failed:', error);
+                // Show fallback preview
+                const fallbackPreview = createFallbackPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
+                displayStoryPreview(fallbackPreview, mainCharacter, setting, mainTheme, specialElement, lesson);
+            }
+        }
+
+        async function generateFullStory(mainCharacter, setting, mainTheme, specialElement, lesson) {
             // Show enhanced loading state with progress
             showLoadingProgress();
 
             try {
-                updateLoadingMessage('Trying AI story generation...');
+                updateLoadingMessage('Creating your full magical story...');
                 // Try AI generation first
                 const story = await createAIStory(mainCharacter, setting, mainTheme, specialElement, lesson);
                 updateLoadingMessage('✨ Story generated successfully! ✨');
@@ -683,6 +704,42 @@
                     }
                 }, 1000);
             }
+        }
+
+        async function createStoryPreview(character, setting, themes, element, lesson) {
+            // Create a quick preview using template system (fast and reliable)
+            const previewTemplates = [
+                `Once upon a time, a ${character} lived in a magical ${setting}. One day, they discovered a special ${element} that would teach them about ${themes}.`,
+                `In a beautiful ${setting}, there was a kind ${character} who loved helping others. Their adventure began when they found a mysterious ${element}.`,
+                `A gentle ${character} in the ${setting} was about to have the most wonderful adventure. It all started when they stumbled upon a glowing ${element}.`,
+                `Deep in the ${setting}, a curious ${character} was exploring when something amazing happened. They found a magical ${element} that would change everything.`
+            ];
+            
+            const preview = getRandomElement(previewTemplates);
+            const title = `The ${capitalize(character)} and the Magic of ${capitalize(setting)}`;
+            
+            // Add lesson hint
+            const lessonHint = `This story will teach that ${lesson}.`;
+            
+            return {
+                title: title,
+                preview: preview,
+                lesson: lessonHint,
+                character: character,
+                setting: setting,
+                themes: themes
+            };
+        }
+
+        function createFallbackPreview(character, setting, themes, element, lesson) {
+            return {
+                title: `The Adventures of ${capitalize(character)}`,
+                preview: `Join a wonderful ${character} on a magical journey through the ${setting}. With the help of a special ${element}, they'll discover the importance of ${themes} and learn that ${lesson}.`,
+                lesson: `This heartwarming tale teaches valuable lessons about kindness and friendship.`,
+                character: character,
+                setting: setting,
+                themes: themes
+            };
         }
 
         async function createAIStory(character, setting, themes, element, lesson) {
@@ -1265,6 +1322,101 @@ Please write the complete story now:`;
             return str.split(' ').map(word => 
                 word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' ');
+        }
+
+        function showPreviewLoading() {
+            document.getElementById('storyContent').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h3>🔮 Creating your story preview... ✨</h3>
+                    <p>Let us show you what magic awaits...</p>
+                </div>
+            `;
+        }
+
+        function displayStoryPreview(previewData, mainCharacter, setting, mainTheme, specialElement, lesson) {
+            document.getElementById('storyContent').innerHTML = `
+                <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #f8f9ff 0%, #e8f4ff 100%); border-radius: 20px; border: 3px solid #5a67d8;">
+                    <div style="font-size: 2em; margin-bottom: 20px;">📖</div>
+                    <h3 style="color: #5a67d8; margin-bottom: 15px; font-size: 1.4em;">${previewData.title}</h3>
+                    
+                    <div style="background: white; padding: 25px; border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <p style="font-size: 1.1em; line-height: 1.6; color: #2d3748; font-style: italic; margin-bottom: 15px;">
+                            "${previewData.preview}"
+                        </p>
+                        <div style="border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 15px;">
+                            <p style="font-size: 0.95em; color: #666; font-weight: 500;">
+                                💡 ${previewData.lesson}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 25px;">
+                        <button onclick="generateFullStory('${mainCharacter}', '${setting}', '${mainTheme}', '${specialElement}', '${lesson}')" style="
+                            background: linear-gradient(135deg, #10b981, #059669);
+                            color: white;
+                            border: none;
+                            padding: 15px 30px;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-size: 1.1em;
+                            font-weight: bold;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
+                            ✨ Yes! Create This Story ✨
+                        </button>
+                        
+                        <button onclick="regeneratePreview('${mainCharacter}', '${setting}', '${mainTheme}', '${specialElement}', '${lesson}')" style="
+                            background: linear-gradient(135deg, #f59e0b, #d97706);
+                            color: white;
+                            border: none;
+                            padding: 15px 30px;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-size: 1.1em;
+                            font-weight: bold;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(245, 158, 11, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(245, 158, 11, 0.3)'">
+                            🔄 Try Different Preview
+                        </button>
+                        
+                        <button onclick="showStoryForm()" style="
+                            background: #6b7280;
+                            color: white;
+                            border: none;
+                            padding: 15px 30px;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-size: 1.1em;
+                            font-weight: bold;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+                        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(107, 114, 128, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.3)'">
+                            ← Change Settings
+                        </button>
+                    </div>
+
+                    <p style="font-size: 0.9em; color: #666; margin-top: 20px; font-style: italic;">
+                        👆 Choose what you'd like to do next. The full story will have 10 magical pages!
+                    </p>
+                </div>
+            `;
+        }
+
+        async function regeneratePreview(mainCharacter, setting, mainTheme, specialElement, lesson) {
+            await generateStoryPreview(mainCharacter, setting, mainTheme, specialElement, lesson);
+        }
+
+        function showStoryForm() {
+            // Reset to empty state to show the form again
+            document.getElementById('storyContent').innerHTML = `
+                <div class="empty-state">
+                    <h3>🌟 Your Magical Story Will Appear Here!</h3>
+                    <p>Fill out the form on the left and click "Create My Story" to generate a personalized bedtime story for your little one.</p>
+                </div>
+            `;
         }
 
         function showLoadingProgress() {
