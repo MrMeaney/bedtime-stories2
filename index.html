@@ -897,25 +897,32 @@
         }
 
         async function createAIStory(character, setting, themes, element, lesson) {
+            console.log('🤖 Starting AI story generation for:', character, 'in', setting);
+            
             // Try multiple AI services for better reliability
             const services = [
-                () => tryOpenAICompatibleAPI(character, setting, themes, element, lesson),
-                () => tryHuggingFaceAPI(character, setting, themes, element, lesson),
-                () => tryLocalAIGeneration(character, setting, themes, element, lesson)
+                { name: 'OpenAI Compatible', func: () => tryOpenAICompatibleAPI(character, setting, themes, element, lesson) },
+                { name: 'Hugging Face', func: () => tryHuggingFaceAPI(character, setting, themes, element, lesson) },
+                { name: 'Advanced Template', func: () => tryLocalAIGeneration(character, setting, themes, element, lesson) }
             ];
             
-            for (const serviceCall of services) {
+            for (const service of services) {
                 try {
-                    const story = await serviceCall();
+                    console.log(`🔄 Trying ${service.name}...`);
+                    const story = await service.func();
                     if (story && story.pages && story.pages.length >= 8) {
+                        console.log(`✅ ${service.name} succeeded! Generated ${story.pages.length} pages`);
+                        // Mark as AI-generated for tracking
+                        story.generatedBy = service.name;
                         return story;
                     }
                 } catch (error) {
-                    console.log('AI service failed:', error);
+                    console.log(`❌ ${service.name} failed:`, error.message);
                     continue;
                 }
             }
             
+            console.log('❌ All AI services failed, this should not happen');
             throw new Error('All AI services failed');
         }
 
@@ -1025,25 +1032,45 @@
         }
 
         function createEnhancedStoryPrompt(character, setting, themes, element, lesson) {
-            return `Write a gentle bedtime story for children ages 2-5 about a ${character} in a ${setting}.
+            const storyStyles = [
+                'adventure where the character goes on a journey',
+                'mystery where something needs to be solved',
+                'friendship tale about making new friends',
+                'helping story where someone needs assistance',
+                'discovery story about learning something new',
+                'magical transformation where something changes',
+                'community story about working together'
+            ];
+            const selectedStyle = getRandomElement(storyStyles);
+            
+            return `You are a creative children's author. Write a gentle bedtime story as a ${selectedStyle}.
 
-REQUIREMENTS:
-- Include themes of: ${themes}
-- Feature a magical ${element}
-- Teach the lesson: ${lesson}
-- Write exactly 10 short paragraphs
-- Use simple words and short sentences
-- Make it warm, positive, and calming
-- End with a peaceful bedtime message
+CHARACTER: ${character}
+SETTING: ${setting}  
+THEMES: ${themes}
+MAGIC ITEM: ${element}
+LESSON: ${lesson}
 
-FORMAT: Write 10 numbered paragraphs (1. 2. 3. etc.) with 2-3 sentences each.
+STORY REQUIREMENTS:
+✅ Write EXACTLY 10 paragraphs numbered 1-10
+✅ Each paragraph is 2-3 sentences  
+✅ Use simple, age-appropriate language (ages 2-5)
+✅ Include the magical ${element} prominently
+✅ Make the ${character} learn that ${lesson}
+✅ Include themes of ${themes} throughout
+✅ End with "The end. Sweet dreams! 🌙✨"
+✅ Keep it positive, warm, and bedtime-appropriate
 
-EXAMPLE START:
-1. Once upon a time, in a magical ${setting}, there lived a kind ${character}. Every day, they would help their friends and explore wonderful places.
+WRITING STYLE:
+- Start with "Once upon a time" 
+- Use "said", "asked", "smiled" for dialogue
+- Include gentle emotions and wonder
+- Make it cozy and reassuring
+- Add magical but not scary elements
 
-2. One morning, the ${character} found something special...
+Write the complete 10-paragraph story now:
 
-Please write the complete story now:`;
+1.`;
         }
 
         function createSimpleStoryPrompt(character, setting, themes, element, lesson) {
@@ -1051,31 +1078,172 @@ Please write the complete story now:`;
         }
 
         function createAdvancedTemplateStory(character, setting, themes, element, lesson) {
+            console.log('🎲 Creating advanced template story with dynamic elements...');
+            
+            // Add more randomization by mixing story elements
+            const enhancedElement = addRandomEnhancement(element);
+            const plotTwist = getRandomPlotElement();
+            const supportingCharacters = generateSupportingCharacters(setting);
+            const uniqueChallenge = generateUniqueChallenge(themes);
+            
+            console.log(`🎪 Story elements: Enhanced ${enhancedElement}, Plot: ${plotTwist}, Characters: ${supportingCharacters.length}`);
+            
             // Enhanced template system with more variation
-            const storyVariations = generateMultipleStoryVersions(character, setting, themes, element, lesson);
+            const storyVariations = generateMultipleStoryVersions(character, setting, themes, enhancedElement, lesson, plotTwist, supportingCharacters, uniqueChallenge);
             const selectedStory = getRandomElement(storyVariations);
+            
+            // Add generation metadata
+            selectedStory.generatedBy = 'Advanced Template System';
+            selectedStory.uniqueElements = { enhancedElement, plotTwist, supportingCharacters, uniqueChallenge };
             
             return {
                 title: selectedStory.title,
                 pages: selectedStory.pages,
                 character: character,
-                setting: setting
+                setting: setting,
+                generatedBy: selectedStory.generatedBy
             };
         }
 
-        function generateMultipleStoryVersions(character, setting, themes, element, lesson) {
+        function addRandomEnhancement(element) {
+            const enhancements = [
+                'ancient', 'glowing', 'musical', 'color-changing', 'warm', 'sparkling', 
+                'floating', 'singing', 'dancing', 'rainbow-colored', 'crystal', 'golden',
+                'silver', 'mysterious', 'friendly', 'wise', 'gentle', 'powerful'
+            ];
+            const enhancement = getRandomElement(enhancements);
+            return `${enhancement} ${element}`;
+        }
+
+        function getRandomPlotElement() {
+            const plotElements = [
+                'unexpected friendship', 'hidden talent discovery', 'community celebration', 
+                'seasonal change', 'lost and found', 'helping a stranger', 'solving a puzzle',
+                'overcoming fear', 'learning patience', 'sharing gifts', 'building something together',
+                'exploring new places', 'understanding differences', 'finding courage'
+            ];
+            return getRandomElement(plotElements);
+        }
+
+        function generateSupportingCharacters(setting) {
+            const characterSets = {
+                'enchanted forest': ['wise old oak tree', 'family of friendly squirrels', 'singing bluebird', 'gentle deer'],
+                'magical kingdom': ['kind castle cook', 'helpful page', 'royal gardener', 'friendly guard'],
+                'underwater world': ['wise sea turtle', 'playful dolphins', 'colorful fish family', 'gentle octopus'],
+                'cloud city': ['wind sprite', 'rainbow maker', 'star polisher', 'cloud shepherd'],
+                'space station': ['friendly robot', 'alien visitor', 'space gardener', 'star navigator'],
+                'circus tent': ['acrobat mouse', 'juggling bear', 'dancing elephant', 'wise ringmaster']
+            };
+            
+            const availableCharacters = characterSets[setting] || ['wise friend', 'helpful neighbor', 'kind stranger', 'gentle guide'];
+            const numCharacters = Math.floor(Math.random() * 3) + 1; // 1-3 characters
+            return shuffleArray(availableCharacters).slice(0, numCharacters);
+        }
+
+        function generateUniqueChallenge(themes) {
+            const challengeTypes = {
+                'friendship': ['making new friends', 'helping a shy friend', 'including everyone', 'resolving disagreements'],
+                'kindness': ['helping someone in need', 'being gentle with feelings', 'sharing resources', 'caring for others'],
+                'courage': ['trying something new', 'standing up for others', 'facing changes', 'being brave'],
+                'creativity': ['solving problems uniquely', 'making something beautiful', 'finding new ways', 'expressing oneself'],
+                'patience': ['waiting for good things', 'learning slowly', 'helping others learn', 'growing gradually'],
+                'teamwork': ['working together', 'combining strengths', 'helping each other', 'sharing responsibilities']
+            };
+            
+            // Pick challenges related to the main themes
+            const themeArray = themes.split(',').map(t => t.trim().toLowerCase());
+            let possibleChallenges = [];
+            
+            themeArray.forEach(theme => {
+                if (challengeTypes[theme]) {
+                    possibleChallenges = possibleChallenges.concat(challengeTypes[theme]);
+                }
+            });
+            
+            if (possibleChallenges.length === 0) {
+                possibleChallenges = ['learning something important', 'helping others', 'being kind', 'working together'];
+            }
+            
+            return getRandomElement(possibleChallenges);
+        }
+
+        function generateMultipleStoryVersions(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge) {
+            console.log('📚 Generating template story variations with dynamic elements...');
             const versions = [];
             
-            // Version 1: Classic adventure
-            versions.push(createClassicAdventureStory(character, setting, themes, element, lesson));
+            // Create many more unique story types with enhanced parameters
+            const storyTypes = [
+                () => createClassicAdventureStory(character, setting, themes, element, lesson),
+                () => createFriendshipStory(character, setting, themes, element, lesson),
+                () => createDiscoveryStory(character, setting, themes, element, lesson),
+                () => createMysteryStory(character, setting, themes, element, lesson),
+                () => createHelpingStory(character, setting, themes, element, lesson),
+                () => createMagicalTransformationStory(character, setting, themes, element, lesson),
+                () => createTimeAdventureStory(character, setting, themes, element, lesson),
+                () => createCommunityStory(character, setting, themes, element, lesson),
+                () => createChallengeOvercomingStory(character, setting, themes, element, lesson),
+                () => createSeasonalMagicStory(character, setting, themes, element, lesson),
+                // New dynamic story types that use the enhanced elements
+                () => createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge)
+            ];
             
-            // Version 2: Friendship focus
-            versions.push(createFriendshipStory(character, setting, themes, element, lesson));
+            // Generate multiple versions for variety, preferring the dynamic story
+            const numVersions = Math.min(3, storyTypes.length);
+            let selectedTypes = shuffleArray([...storyTypes]).slice(0, numVersions);
             
-            // Version 3: Discovery theme  
-            versions.push(createDiscoveryStory(character, setting, themes, element, lesson));
+            // Ensure the dynamic story is always included for maximum uniqueness
+            const dynamicStory = () => createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge);
+            if (!selectedTypes.some(story => story.toString().includes('createDynamicStory'))) {
+                selectedTypes[0] = dynamicStory; // Replace first with dynamic story
+            }
             
+            selectedTypes.forEach(createStory => {
+                try {
+                    versions.push(createStory());
+                } catch (error) {
+                    console.log('Template generation error:', error);
+                }
+            });
+            
+            console.log(`📖 Generated ${versions.length} story variations with enhanced elements`);
             return versions;
+        }
+
+        function createDynamicStory(character, setting, themes, element, lesson, plotTwist, supportingCharacters, uniqueChallenge) {
+            const title = `${capitalize(character)} and the ${capitalize(plotTwist)}`;
+            
+            const pages = [
+                `Once upon a time, in a wonderful ${setting}, lived a ${character} who was known for their ${themes.split(',')[0]}. They had a special ${element} that would soon lead to an amazing ${plotTwist}.`,
+                
+                `One day, while exploring the ${setting}, ${capitalize(character)} met ${supportingCharacters[0] || 'a new friend'}. This friend told them about ${uniqueChallenge} that needed help from someone special.`,
+                
+                `${capitalize(character)} felt curious and wanted to help. They held their ${element} close and asked, "How can we work together to solve this?" The ${element} began to glow warmly in response.`,
+                
+                `The ${supportingCharacters[0] || 'friend'} was amazed by the ${element}'s magic! Together, they came up with a plan to tackle the challenge of ${uniqueChallenge} using ${themes}.`,
+                
+                `Along the way, they met ${supportingCharacters[1] || 'another helpful friend'} who had been struggling with the same problem. "Don't worry," said ${capitalize(character)}, "we can all work together!"`,
+                
+                `The three friends used the power of the ${element} and their combined skills to make progress. ${capitalize(character)} learned that ${uniqueChallenge} becomes easier when friends support each other.`,
+                
+                `As they worked, something wonderful happened - their ${plotTwist} attracted ${supportingCharacters[2] || 'more friends'} who wanted to help too. Soon, the whole ${setting} was involved!`,
+                
+                `Everyone in the ${setting} contributed their unique talents to help with ${uniqueChallenge}. ${capitalize(character)} discovered that true ${themes} means bringing out the best in everyone.`,
+                
+                `The ${plotTwist} led to the most amazing celebration the ${setting} had ever seen. All the friends gathered around ${capitalize(character)} and their magical ${element} to share stories and laughter.`,
+                
+                `That night, as ${capitalize(character)} went to sleep holding their ${element}, they smiled knowing that ${lesson}. The ${plotTwist} had brought everyone closer together in the most magical way. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
         }
 
         function createClassicAdventureStory(character, setting, themes, element, lesson) {
@@ -1157,6 +1325,216 @@ Please write the complete story now:`;
                 `The ${character} realized that the greatest discovery wasn't the magical ${element}, but the knowledge that everyone has wisdom to share and kindness to give.`,
                 
                 `Years later, when new young explorers came to the ${setting}, they would find the ${element} waiting for them too. The cycle of discovery and learning would continue forever. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createMysteryStory(character, setting, themes, element, lesson) {
+            const mysteries = ['missing rainbow colors', 'disappearing flowers', 'silent music boxes', 'forgotten laughter', 'lost starlight'];
+            const mystery = getRandomElement(mysteries);
+            const title = `${capitalize(character)} and the Mystery of the ${capitalize(mystery)}`;
+            
+            const pages = [
+                `In the peaceful ${setting}, everything was usually perfect. But ${capitalize(character)} noticed something strange - the ${mystery} had vanished overnight, leaving everyone puzzled and sad.`,
+                
+                `Being naturally curious, ${capitalize(character)} decided to investigate. They found their special ${element} was glowing softly, as if it wanted to help solve this mysterious problem.`,
+                
+                `Following the ${element}'s glow, ${capitalize(character)} discovered tiny clues everywhere. A shimmering trail led through the ${setting}, past sleeping creatures and whispering trees.`,
+                
+                `The trail led to a hidden part of the ${setting} where a lonely creature was sitting sadly. They had accidentally taken the ${mystery} because they felt so alone and forgotten.`,
+                
+                `Instead of being angry, ${capitalize(character)} sat down with the lonely creature. "Why did you take the ${mystery}?" they asked gently, showing true ${themes}.`,
+                
+                `The creature explained they just wanted to feel special and noticed. ${capitalize(character)} understood completely and shared their own ${element}, showing that ${lesson}.`,
+                
+                `Together, they worked to return the ${mystery} to where it belonged. As they did, the creature's heart filled with joy, and they became fast friends with ${capitalize(character)}.`,
+                
+                `The ${setting} was restored to its former beauty, but now it was even better because it had a new friend. Everyone celebrated the mystery being solved through kindness.`,
+                
+                `${capitalize(character)} learned that sometimes what seems like a problem is really someone asking for help. The ${element} sparkled with approval at this wise discovery.`,
+                
+                `From that day forward, the creature was never lonely again, and ${capitalize(character)} always remembered that ${lesson}. The mystery had brought them all closer together. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createHelpingStory(character, setting, themes, element, lesson) {
+            const problems = ['wilted garden', 'broken bridge', 'sad waterfall', 'cold mountain', 'empty playground'];
+            const problem = getRandomElement(problems);
+            const title = `How ${capitalize(character)} Saved the ${capitalize(problem)}`;
+            
+            const pages = [
+                `${capitalize(character)} loved their home in the beautiful ${setting}. Every day was filled with joy and wonder, until they discovered the ${problem} that made everyone worried.`,
+                
+                `The ${problem} was causing trouble for all the creatures in the ${setting}. ${capitalize(character)} felt sad seeing their friends struggle and knew they had to help somehow.`,
+                
+                `Remembering their magical ${element}, ${capitalize(character)} held it close and made a wish. The ${element} began to glow, showing that it was ready to help with this important mission.`,
+                
+                `But the ${element} couldn't work alone. It needed the power of ${themes} to be truly effective. ${capitalize(character)} realized they needed to gather all their friends to help.`,
+                
+                `One by one, ${capitalize(character)} visited each friend in the ${setting}. They explained the problem and asked everyone to work together, showing what true ${themes} means.`,
+                
+                `All the friends agreed to help! A wise owl brought knowledge, a strong bear brought courage, a gentle rabbit brought kindness, and many others brought their special gifts.`,
+                
+                `Working together with the ${element}'s magic, they began to fix the ${problem}. Each friend contributed something important, and ${capitalize(character)} learned that ${lesson}.`,
+                
+                `As they worked, something magical happened. The ${problem} wasn't just fixed - it became more beautiful than ever before, blessed by their teamwork and friendship.`,
+                
+                `The whole ${setting} celebrated their success with a grand party. Everyone felt proud that they had worked together to help, and their community was stronger than ever.`,
+                
+                `That night, as ${capitalize(character)} fell asleep holding their ${element}, they smiled knowing that ${lesson}. When friends work together, anything is possible. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createMagicalTransformationStory(character, setting, themes, element, lesson) {
+            const transformations = ['could speak all languages', 'grew beautiful wings', 'gained healing powers', 'could make flowers bloom', 'became invisible at will'];
+            const transformation = getRandomElement(transformations);
+            const title = `The Day ${capitalize(character)} ${transformation}`;
+            
+            const pages = [
+                `It started as an ordinary morning in the ${setting}. ${capitalize(character)} was playing with their special ${element} when something extraordinary happened - they suddenly ${transformation}!`,
+                
+                `At first, ${capitalize(character)} was amazed and excited by this magical change. They experimented with their new ability, discovering all the wonderful things they could now do.`,
+                
+                `But soon, ${capitalize(character)} realized that having special powers came with special responsibilities. They saw creatures in the ${setting} who needed help, and now they could provide it.`,
+                
+                `Using their new ability wisely, ${capitalize(character)} began helping everyone around them. They learned that true magic comes not from what you can do, but from choosing to practice ${themes}.`,
+                
+                `A family of lost butterflies needed guidance, and ${capitalize(character)}'s new power helped them find their way home. The butterflies were so grateful and became lifelong friends.`,
+                
+                `Next, ${capitalize(character)} helped an elderly tree that had been feeling lonely. Their magical ability brought the tree comfort and joy, showing that ${lesson}.`,
+                
+                `Word spread throughout the ${setting} about ${capitalize(character)}'s kindness. Creatures came from far and wide, not because of the magic, but because of the love they shared.`,
+                
+                `As the day ended, ${capitalize(character)} made a wonderful discovery. The transformation had been temporary, but the friendships and good deeds they'd made would last forever.`,
+                
+                `Even without the magical ability, ${capitalize(character)} continued helping others every day. They realized that the real magic was in their heart, not in special powers.`,
+                
+                `The ${element} glowed warmly, confirming what ${capitalize(character)} had learned: ${lesson}. True magic comes from within, and kindness is the greatest power of all. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createTimeAdventureStory(character, setting, themes, element, lesson) {
+            const timeDestinations = ['ancient past when dinosaurs were gentle', 'future where everyone flew on clouds', 'time when the ${setting} was just being born', 'magical era of the first ${element}'];
+            const destination = getRandomElement(timeDestinations);
+            const title = `${capitalize(character)}'s Journey Through Time`;
+            
+            const pages = [
+                `While exploring the ${setting}, ${capitalize(character)} discovered that their ${element} had a very special secret - it could travel through time! With a gentle touch, they were whisked away to ${destination}.`,
+                
+                `Everything in this time was different but wonderful. ${capitalize(character)} met creatures they'd never seen before, all living peacefully and showing incredible ${themes}.`,
+                
+                `The creatures of this time period were curious about ${capitalize(character)} and their stories. They shared their own wisdom about ${themes} and how it made their world beautiful.`,
+                
+                `${capitalize(character)} learned amazing things about how the ${setting} had changed over time. Each era had its own special magic, but the most important thing - ${themes} - remained constant.`,
+                
+                `In this time, ${capitalize(character)} helped solve a problem that the ancient creatures couldn't handle alone. Their modern knowledge combined with timeless ${themes} saved the day.`,
+                
+                `The grateful creatures taught ${capitalize(character)} an important lesson that had been passed down through all of time: ${lesson}. This wisdom was more valuable than any treasure.`,
+                
+                `As the ${element} began to glow again, ${capitalize(character)} knew it was time to return home. They said goodbye to their new friends, promising to remember everything they'd learned.`,
+                
+                `Back in their own time in the ${setting}, ${capitalize(character)} saw everything with new eyes. They understood how their actions today would affect the future, just like the past affected them.`,
+                
+                `${capitalize(character)} began sharing the ancient wisdom with all their friends. The timeless lesson about ${themes} spread throughout the ${setting}, making everyone happier.`,
+                
+                `Every night, ${capitalize(character)} looked at their ${element} and remembered the incredible journey through time. They knew that ${lesson}, no matter when or where you are. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createCommunityStory(character, setting, themes, element, lesson) {
+            const communityEvents = ['harvest festival', 'star-watching celebration', 'rainbow day', 'friendship fair', 'gratitude gathering'];
+            const event = getRandomElement(communityEvents);
+            const title = `${capitalize(character)} and the Great ${capitalize(event)}`;
+            
+            const pages = [
+                `The ${setting} was buzzing with excitement! It was time for the annual ${event}, and ${capitalize(character)} couldn't wait to participate with their special ${element}.`,
+                
+                `But as the preparations began, ${capitalize(character)} noticed that some creatures seemed sad and left out. They weren't sure how they could contribute to the ${event}.`,
+                
+                `${capitalize(character)} remembered what ${themes} truly means and decided to help everyone feel included. They used their ${element} to bring all the creatures together.`,
+                
+                `"Everyone has something special to offer," said ${capitalize(character)}. They helped each creature discover their unique talents and find their perfect role in the ${event}.`,
+                
+                `A shy mouse became the official invitation decorator, a nervous frog became the music coordinator, and an elderly tortoise became the wise storyteller. Everyone had a place!`,
+                
+                `As the ${event} day arrived, the whole ${setting} came alive with joy. Every creature contributed their special gift, creating the most wonderful celebration anyone had ever seen.`,
+                
+                `${capitalize(character)} realized that the ${event} was beautiful not because of any one person, but because everyone worked together with love and ${themes}.`,
+                
+                `During the celebration, all the creatures thanked ${capitalize(character)} for helping them understand that ${lesson}. The ${element} glowed brighter than ever before.`,
+                
+                `From that day forward, every event in the ${setting} included everyone. The community grew stronger and happier because they learned to value each other's contributions.`,
+                
+                `As the stars came out that night, ${capitalize(character)} felt proud knowing that ${lesson}. The ${event} had brought everyone together in the most magical way. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createChallengeOvercomingStory(character, setting, themes, element, lesson) {
+            const challenges = ['fear of heights', 'shyness around others', 'difficulty with a new skill', 'worry about being different', 'trouble making decisions'];
+            const challenge = getRandomElement(challenges);
+            const title = `How ${capitalize(character)} Overcame Their ${capitalize(challenge)}`;
+            
+            const pages = [
+                `${capitalize(character)} lived happily in the ${setting}, but they had one big challenge - their ${challenge}. This made them feel sad and prevented them from enjoying some things.`,
+                
+                `One day, while holding their special ${element}, ${capitalize(character)} met a wise friend who noticed their struggle. "Everyone faces challenges," the friend said kindly.`,
+                
+                `The wise friend explained that ${themes} includes being patient and kind with yourself. They suggested that ${capitalize(character)} try facing their challenge one small step at a time.`,
+                
+                `${capitalize(character)} decided to be brave and try. With their ${element} for comfort and courage, they took the tiniest first step toward overcoming their ${challenge}.`,
+                
+                `It wasn't easy at first, but ${capitalize(character)} discovered that every small step made them feel a little braver and more confident. Their friends in the ${setting} cheered them on.`,
+                
+                `Soon, other creatures in the ${setting} shared that they had challenges too. ${capitalize(character)} realized they weren't alone and that sharing struggles with friends helps a lot.`,
+                
+                `Together, all the friends supported each other through their various challenges. They learned that practicing ${themes} means encouraging others just as much as helping yourself.`,
+                
+                `Day by day, ${capitalize(character)} grew stronger and more confident. Their ${challenge} didn't disappear completely, but it no longer controlled their life or happiness.`,
+                
+                `${capitalize(character)} became known throughout the ${setting} as someone who helps others face their challenges with kindness and patience, showing everyone that ${lesson}.`,
+                
+                `That night, ${capitalize(character)} smiled at their ${element}, grateful for the journey. They learned that ${lesson}, and that's the most important lesson of all. The end. Sweet dreams! 🌙✨`
+            ];
+            
+            return { title, pages };
+        }
+
+        function createSeasonalMagicStory(character, setting, themes, element, lesson) {
+            const seasons = ['spring awakening', 'summer sunshine', 'autumn harvest', 'winter wonder'];
+            const season = getRandomElement(seasons);
+            const title = `${capitalize(character)} and the Magic of ${capitalize(season)}`;
+            
+            const pages = [
+                `As ${season} arrived in the ${setting}, ${capitalize(character)} noticed that their ${element} was behaving in a very special way, glowing with the unique magic of the season.`,
+                
+                `Each season brought different gifts to the ${setting}. This time, ${capitalize(character)} discovered they could help spread the seasonal magic to everyone around them.`,
+                
+                `Some creatures in the ${setting} were struggling to adapt to the seasonal changes. ${capitalize(character)} used the power of ${themes} and their ${element} to help them.`,
+                
+                `Working together, ${capitalize(character)} and their friends learned to celebrate what made each season special while helping those who found change difficult.`,
+                
+                `The ${element} taught ${capitalize(character)} that just like seasons, life has different phases, and each one brings its own beauty and opportunities for ${themes}.`,
+                
+                `Through acts of kindness and ${themes}, ${capitalize(character)} helped everyone in the ${setting} find joy in the seasonal changes and what they brought.`,
+                
+                `As the season progressed, the ${setting} became more beautiful than ever. Every creature had learned to appreciate the special gifts that ${season} offered.`,
+                
+                `${capitalize(character)} organized a celebration to honor the season and all the ways their community had grown together through change and ${themes}.`,
+                
+                `During the celebration, everyone shared what they loved most about ${season} and how they had learned to embrace change with ${themes} and support from friends.`,
+                
+                `As the season continued, ${capitalize(character)} kept their ${element} close, knowing that ${lesson}. Each season of life brings new opportunities for love and growth. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
