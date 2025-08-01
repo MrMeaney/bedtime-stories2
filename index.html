@@ -1084,7 +1084,7 @@ Write the complete 10-paragraph story now:
             const uniqueElements = generateUniqueStoryElements(character, setting, themes, element, lesson, selectedStructure);
             
             // Create story using micro-templates that can be mixed differently each time
-            const story = buildDynamicNarrative(uniqueElements, storyLength, selectedStructure);
+            const story = buildDynamicNarrative(uniqueElements, storyLength, selectedStructure, character, setting, element);
             
             return {
                 title: story.title,
@@ -1125,17 +1125,22 @@ Write the complete 10-paragraph story now:
             };
         }
 
-        function buildDynamicNarrative(elements, length, structure) {
+        function buildDynamicNarrative(elements, length, structure, character, setting, element) {
+            // Add character info to elements for better story construction
+            elements.character = character;
+            elements.setting = setting;
+            elements.element = element;
+            
             const narrativeBuilder = getNarrativeBuilder(structure);
             const storyBeats = narrativeBuilder(elements, length);
             
-            // Create title using multiple randomization layers
+            // Create readable titles using actual character names
             const titleVariations = [
-                `${capitalize(elements.contextualSupporters[0] || 'Friend')} and the ${capitalize(elements.magicalMoments[0].name)}`,
-                `The ${capitalize(structure.replace('-', ' '))} of ${capitalize(elements.personalizedActions[0])}`,
-                `${capitalize(elements.uniqueSettings[0])} Adventures`,
-                `How ${capitalize(elements.thematicElements.primaryTheme)} Saved the Day`,
-                `The Secret of the ${capitalize(elements.magicalMoments[1]?.name || 'Magic')}`
+                `${capitalize(character)} and the Magic ${capitalize(element)}`,
+                `The Adventures of ${capitalize(character)}`,
+                `${capitalize(character)}'s ${capitalize(structure.replace('-', ' '))}`,
+                `How ${capitalize(character)} Helped Everyone`,
+                `The ${capitalize(character)} and the Secret of ${capitalize(setting)}`
             ];
             
             return {
@@ -1829,15 +1834,18 @@ Write the complete 10-paragraph story now:
         }
 
         function generatePersonalizedActions(character, themes) {
-            const actionTypes = ['helping others', 'solving problems', 'making friends', 'learning skills', 'sharing joy'];
-            const characterModifiers = character.includes('butterfly') ? ['dancing', 'fluttering', 'gracefully moving'] :
-                                     character.includes('dragon') ? ['flying', 'protecting', 'breathing magic'] :
-                                     character.includes('rabbit') ? ['hopping', 'exploring', 'sharing carrots'] :
-                                     ['moving kindly', 'acting wisely', 'helping gently'];
+            // Simple, child-friendly actions
+            const basicActions = ['helping friends', 'playing games', 'exploring', 'sharing', 'being kind'];
+            const characterActions = character.includes('butterfly') ? ['dancing in flowers', 'flying gracefully'] :
+                                   character.includes('dragon') ? ['flying high', 'protecting friends'] :
+                                   character.includes('rabbit') ? ['hopping around', 'finding carrots'] :
+                                   character.includes('cat') ? ['purring softly', 'playing gently'] :
+                                   character.includes('bird') ? ['singing songs', 'building nests'] :
+                                   ['helping others', 'making friends'];
             
             return shuffleArray([
-                ...actionTypes,
-                ...characterModifiers
+                ...basicActions,
+                ...characterActions.slice(0, 2)
             ]);
         }
 
@@ -1875,16 +1883,21 @@ Write the complete 10-paragraph story now:
         }
 
         function buildLinearAdventure(elements, length) {
+            // Use the actual character and element names for better readability
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            
             const openings = [
-                `In the heart of ${elements.uniqueSettings[0]}, there lived a ${elements.personalizedActions[2]} character who loved ${elements.personalizedActions[0]}.`,
-                `Once upon a time, a character with a gift for ${elements.personalizedActions[1]} discovered something amazing in ${elements.uniqueSettings[1]}.`,
-                `Deep in ${elements.uniqueSettings[0]}, where ${elements.magicalMoments[0].effect}, lived someone very special.`
+                `Once upon a time, in a magical ${setting}, lived a kind ${character} who loved ${elements.personalizedActions[0]}.`,
+                `In the beautiful ${elements.uniqueSettings[0]}, there was a gentle ${character} who enjoyed ${elements.personalizedActions[1]} every day.`,
+                `Deep in the ${setting}, a curious ${character} spent their days exploring and helping others in their community.`
             ];
             
             const developments = [
-                `Through ${elements.personalizedActions[0]}, they met ${elements.contextualSupporters[0]} who needed help with ${elements.structuralChallenge}.`,
-                `While exploring ${elements.uniqueSettings[2]}, they discovered that ${elements.magicalMoments[1].effect} whenever they practiced ${elements.thematicElements.primaryTheme}.`,
-                `The ${elements.contextualSupporters[1]} showed them how ${elements.thematicElements.descriptors[0]} could solve even the biggest problems.`
+                `One sunny morning, the ${character} discovered a special ${element} that sparkled with magical light.`,
+                `While ${elements.personalizedActions[0]}, the ${character} met a ${elements.contextualSupporters[0]} who needed help.`,
+                `The ${character} learned that their ${element} had amazing powers that could help solve problems and bring joy to others.`
             ];
             
             // Create dynamic story by mixing elements differently each time
@@ -1905,21 +1918,31 @@ Write the complete 10-paragraph story now:
         }
 
         function generateDynamicMiddleBeat(elements, beatNumber) {
+            const character = elements.character;
+            const element = elements.element;
+            const supporter = elements.contextualSupporters[beatNumber % elements.contextualSupporters.length];
+            const location = elements.uniqueSettings[beatNumber % elements.uniqueSettings.length];
+            
             const beatTypes = [
-                `Working together with ${elements.contextualSupporters[beatNumber % elements.contextualSupporters.length]}, they learned that ${elements.thematicElements.descriptors[beatNumber % elements.thematicElements.descriptors.length]} makes everything better.`,
-                `In ${elements.uniqueSettings[beatNumber % elements.uniqueSettings.length]}, something wonderful happened: ${elements.magicalMoments[beatNumber % elements.magicalMoments.length].effect}.`,
-                `Through ${elements.personalizedActions[beatNumber % elements.personalizedActions.length]}, they discovered new ways to bring ${elements.thematicElements.primaryTheme} to everyone around them.`,
-                `The adventure led them to understand that ${elements.thematicElements.lessonCore} in the most unexpected ways.`
+                `${capitalize(character)} worked together with the ${supporter} to help solve the problem. They learned that ${elements.thematicElements.descriptors[0]} makes everything better.`,
+                `In the ${location}, something wonderful happened. The ${element} began to glow and ${elements.magicalMoments[0].effect}.`,
+                `${capitalize(character)} used their ${element} to help others in need. They discovered that ${elements.thematicElements.primaryTheme} brings joy to everyone.`,
+                `The ${supporter} taught ${capitalize(character)} an important lesson about friendship and ${elements.thematicElements.primaryTheme}.`,
+                `As ${capitalize(character)} continued their adventure, more friends joined to help. Together, they made the ${elements.setting} a happier place.`
             ];
             
             return getRandomElement(beatTypes);
         }
 
         function generateSatisfyingEnding(elements) {
+            const character = elements.character;
+            const element = elements.element;
+            const setting = elements.setting;
+            
             const endings = [
-                `As the stars appeared in the sky, everyone gathered to celebrate how ${elements.thematicElements.primaryTheme} had brought them all together. The end. Sweet dreams! 🌙✨`,
-                `That night, surrounded by ${elements.contextualSupporters.join(', ')}, they realized that ${elements.thematicElements.lessonCore} creates the most beautiful magic of all. The end. Sweet dreams! 🌙✨`,
-                `With ${elements.magicalMoments[0].effect} lighting up ${elements.uniqueSettings[0]}, everyone learned that ${elements.thematicElements.primaryTheme} makes every day an adventure. The end. Sweet dreams! 🌙✨`
+                `As the sun set over the ${setting}, ${capitalize(character)} smiled happily. They had learned that ${elements.thematicElements.primaryTheme} makes the world a better place. The end. Sweet dreams! 🌙✨`,
+                `That night, ${capitalize(character)} tucked their magical ${element} away safely. All their new friends waved goodbye, and everyone felt happy and loved. The end. Sweet dreams! 🌙✨`,
+                `${capitalize(character)} looked around at all the friends they had helped and the joy they had brought to the ${setting}. It had been the most wonderful adventure ever! The end. Sweet dreams! 🌙✨`
             ];
             
             return getRandomElement(endings);
