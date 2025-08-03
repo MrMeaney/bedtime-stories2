@@ -1395,88 +1395,339 @@ Write the complete 10-paragraph story now:
             return shuffled;
         }
 
+        function generateCharacterPersonality(character, themes) {
+            const characterNames = {
+                'dragon': ['Ember', 'Spark', 'Zara', 'Phoenix', 'Ruby'],
+                'unicorn': ['Luna', 'Star', 'Aurora', 'Pearl', 'Rainbow'],
+                'fairy': ['Willow', 'Petal', 'Sage', 'Lily', 'Rose'],
+                'fox': ['Rusty', 'Amber', 'Scout', 'Clever', 'Bright'],
+                'bear': ['Honey', 'Forest', 'Gentle', 'Strong', 'Cozy'],
+                'rabbit': ['Hop', 'Clover', 'Swift', 'Brave', 'Kind'],
+                'elephant': ['Wisdom', 'Memory', 'Grace', 'Noble', 'Heart'],
+                'owl': ['Sage', 'Moonlight', 'Whisper', 'Athena', 'Hoot'],
+                'cat': ['Whiskers', 'Shadow', 'Velvet', 'Midnight', 'Purr'],
+                'butterfly': ['Flutter', 'Rainbow', 'Bloom', 'Dance', 'Jewel']
+            };
+
+            const positiveTraits = {
+                'friendship': ['caring and thoughtful', 'naturally inclusive', 'wonderfully empathetic'],
+                'kindness': ['gentle and compassionate', 'always helpful', 'tenderhearted'],
+                'sharing': ['generous and giving', 'community-minded', 'selflessly thoughtful'],
+                'courage': ['quietly brave', 'determined and strong', 'boldly caring'],
+                'honesty': ['truthful and sincere', 'trustworthy and reliable', 'authentically genuine']
+            };
+
+            const relatable_fears = [
+                'not being good enough', 'making mistakes', 'being different from others',
+                'disappointing friends', 'not knowing what to do', 'being too small to help'
+            ];
+
+            const hobbies = [
+                'collecting smooth stones', 'watching clouds change shapes', 'listening to bird songs',
+                'growing wildflowers', 'stargazing', 'making music with leaves',
+                'helping younger creatures', 'exploring hidden paths'
+            ];
+
+            const baseCharacter = character.includes(' ') ? character.split(' ')[1] : character;
+            const names = characterNames[baseCharacter] || ['Friend', 'Buddy', 'Pal', 'Joy', 'Hope'];
+            const theme = themes.split(',')[0].trim();
+            const traits = positiveTraits[theme] || ['wonderfully caring', 'naturally kind', 'genuinely helpful'];
+
+            return {
+                name: getRandomElement(names),
+                trait: getRandomElement(traits),
+                fear: getRandomElement(relatable_fears),
+                hobby: getRandomElement(hobbies)
+            };
+        }
+
+        function generateMeaningfulChallenge(themes, setting) {
+            const themeToChallenge = {
+                'friendship': {
+                    name: 'the Lonely Heart',
+                    problem: 'many creatures in the ${setting} had grown apart and forgotten how to connect with each other',
+                    firstAttempt: 'organizing a small gathering where everyone could share something they loved',
+                    helper: 'a wise old turtle who remembered when everyone was friends',
+                    solution: 'true friendship grows when we listen with our hearts and share our authentic selves'
+                },
+                'kindness': {
+                    name: 'the Forgotten Corner',
+                    problem: 'a part of the ${setting} had become dark and sad, with creatures avoiding it completely',
+                    firstAttempt: 'bringing small gifts of comfort to the overlooked places',
+                    helper: 'a gentle mouse who had been quietly taking care of the forgotten corner',
+                    solution: 'even the smallest acts of kindness can transform the most difficult situations'
+                },
+                'sharing': {
+                    name: 'the Empty Storehouse',
+                    problem: 'winter was coming and many creatures had not saved enough food for the cold months',
+                    firstAttempt: 'giving away half of their own winter supplies to those in need',
+                    helper: 'a clever squirrel who knew secret places where food could be found',
+                    solution: 'when everyone shares what they have, there is always enough for all'
+                },
+                'courage': {
+                    name: 'the Shadow of Fear',
+                    problem: 'a mysterious darkness was spreading through the ${setting}, making everyone afraid to venture out',
+                    firstAttempt: 'walking into the darkness alone to understand what was causing the fear',
+                    helper: 'a small firefly whose light had been dimmed by worry',
+                    solution: 'courage is not the absence of fear, but choosing to help others despite being afraid'
+                },
+                'honesty': {
+                    name: 'the Web of Confusion',
+                    problem: 'rumors and misunderstandings had created conflicts between different groups in the ${setting}',
+                    firstAttempt: 'speaking truthfully about their own mistakes and encouraging others to do the same',
+                    helper: 'an elderly owl who had seen how secrets could hurt communities',
+                    solution: 'honesty creates the trust that allows communities to heal and grow together'
+                }
+            };
+
+            const theme = themes.split(',')[0].trim();
+            const challenge = themeToChallenge[theme] || themeToChallenge['kindness'];
+            
+            return {
+                name: challenge.name,
+                problem: challenge.problem.replace('${setting}', setting),
+                firstAttempt: challenge.firstAttempt,
+                helper: challenge.helper,
+                solution: challenge.solution
+            };
+        }
+
         function createClassicAdventureStory(character, setting, themes, element) {
-            const title = `The ${capitalize(character)}'s Magical Adventure`;
+            const personality = generateCharacterPersonality(character, themes);
+            const challenge = generateMeaningfulChallenge(themes, setting);
+            const title = `${capitalize(character)} and the Challenge of ${challenge.name}`;
             
             const pages = [
-                `Once upon a time, in a beautiful ${setting}, there lived a brave ${character}. They loved to explore and help everyone they met.`,
+                `In the heart of a ${setting}, lived a young ${character} named ${personality.name}. ${personality.name} was known for being ${personality.trait}, but secretly worried about ${personality.fear}. Every morning, they would practice ${personality.hobby} while listening to the gentle sounds of the ${setting}.`,
                 
-                `One sunny day, while walking through the ${setting}, the ${character} heard a soft humming sound. Following the melody, they discovered a glowing ${element} hidden among the flowers.`,
+                `One misty morning, ${personality.name} discovered something troubling: ${challenge.problem}. Their heart sank as they realized how serious this was. "Someone needs to help," ${personality.name} whispered, feeling both scared and determined.`,
                 
-                `When the ${character} gently touched the ${element}, it began to sparkle with rainbow colors. "Hello, kind friend," whispered a magical voice. "I have been waiting for someone special like you."`,
+                `While searching for a solution, ${personality.name} found a mysterious ${element} half-buried beneath some fallen leaves. As soon as they touched it, the ${element} began to hum with a warm, golden light. "I've been waiting for someone brave enough to help," said a gentle voice from within.`,
                 
-                `The magical ${element} told the ${character} about creatures in the ${setting} who needed help. "Will you use my magic to spread ${themes.split(',')[0].trim()} wherever you go?" it asked.`,
+                `The magical ${element} explained that solving this problem would require more than magic—it would need ${themes.split(',')[0].trim()}. "${personality.name}," it said, "I can guide you, but you must find the courage within yourself to take the first step."`,
                 
-                `The ${character} nodded eagerly. Together, they set off to find the first friend who needed help. Soon they met a sad little rabbit who had lost their way home.`,
+                `${personality.name} took a deep breath, remembering all the times they had felt afraid but did the right thing anyway. With trembling hands but a determined heart, they began ${challenge.firstAttempt}. At first, nothing seemed to happen, and ${personality.name} felt like giving up.`,
                 
-                `Using the power of the ${element}, the ${character} helped the rabbit find their family. The rabbit's joy filled the air with golden sparkles, and they became fast friends.`,
+                `Just when ${personality.name} thought they had failed, something wonderful occurred. Their act of ${themes.split(',')[0].trim()} created a small spark of hope. Other creatures in the ${setting} noticed and came to help. "We believe in you," said ${challenge.helper}, offering encouragement.`,
                 
-                `Word spread quickly through the ${setting} about the kind ${character} and their magical helper. Soon, many creatures came asking for assistance with different problems.`,
+                `Working together, ${personality.name} and their new friends discovered that ${challenge.solution}. Each small success built ${personality.name}'s confidence. They realized that their fear of ${personality.fear} was much smaller than their capacity for ${themes.split(',')[0].trim()}.`,
                 
-                `With each act of kindness, the ${character} learned something important: ${lesson}. The ${element} glowed brighter with every good deed they performed together.`,
+                `As the challenge was finally overcome, ${personality.name} felt different—stronger and more confident. The ${element} glowed brightly and said, "You've learned that true ${themes.split(',')[0].trim()} comes not from never being afraid, but from caring so much about others that you act despite your fears."`,
                 
-                `As the sun began to set, all the creatures of the ${setting} gathered to thank the ${character}. They celebrated with songs, games, and the sharing of delicious treats.`,
+                `The grateful creatures of the ${setting} celebrated ${personality.name}'s growth and courage. But the best reward was the warm feeling in ${personality.name}'s heart, knowing they had discovered something powerful about themselves.`,
                 
-                `That night, as stars twinkled overhead, the ${character} carefully returned the ${element} to its special place. They fell asleep knowing that kindness and friendship would always light their way. The end. Sweet dreams! 🌙✨`
+                `That evening, as ${personality.name} carefully placed the ${element} in a place of honor, they smiled. Tomorrow would bring new challenges, but now they knew that with ${themes.split(',')[0].trim()} and the support of friends, any problem could be solved. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
         }
 
         function createFriendshipStory(character, setting, themes, element) {
-            const title = `${capitalize(character)} and the Circle of Friends`;
+            const personality = generateCharacterPersonality(character, themes);
+            const emotionalJourney = generateFriendshipEmotions();
+            const title = `${personality.name} and the Heart of True Friendship`;
             
             const pages = [
-                `In the heart of a peaceful ${setting} lived a gentle ${character} who loved making new friends. Every morning, they would wake up excited to meet someone new.`,
+                `In a bustling ${setting}, there lived a ${character} named ${personality.name} who was ${personality.trait}. But despite being surrounded by many creatures, ${personality.name} often felt lonely. They worried about ${personality.fear} and wondered if anyone would want to be their true friend.`,
                 
-                `One day, the ${character} found a beautiful ${element} that shimmered like a rainbow. When they picked it up, they heard giggles and whispers coming from all around the ${setting}.`,
+                `One quiet afternoon, while sitting alone under their favorite tree, ${personality.name} noticed a forgotten ${element} buried in the soft earth. The moment they picked it up, it began to glow softly and whispered, "${personality.name}, you have such a big heart. Would you like to learn the secret of deep friendship?"`,
                 
-                `The magical ${element} had the power to help everyone understand each other better. Suddenly, the ${character} could hear the thoughts and feelings of all the creatures nearby.`,
+                `The ${element} revealed that throughout the ${setting}, there were other creatures who felt just as lonely as ${personality.name}. "${emotionalJourney.challenge}," the ${element} explained gently. "But true friendship isn't about being perfect—it's about being real."`,
                 
-                `The first voice belonged to a shy butterfly who was too nervous to join the other insects playing. The ${character} gently encouraged the butterfly to make friends.`,
+                `${personality.name}'s first attempt to reach out was harder than expected. They approached ${emotionalJourney.firstFriend}, who seemed sad and distant. "Hi," ${personality.name} said nervously, "I was wondering if... maybe you'd like to ${emotionalJourney.firstActivity}?" ${emotionalJourney.firstFriend} looked surprised but hopeful.`,
                 
-                `Next, they heard a young fox who felt different from everyone else. The ${character} showed the fox that being unique made them special and helped them find friends who appreciated their differences.`,
+                `At first, the interaction felt awkward. ${personality.name} worried they were saying the wrong things. But then ${emotionalJourney.firstFriend} shared something personal: "${emotionalJourney.vulnerability}." ${personality.name} realized that sharing fears and hopes, not just happy things, was what made friendship real.`,
                 
-                `As the day continued, the ${character} used the ${element}'s magic to bring together creatures who had never spoken before. A wise owl befriended a playful squirrel, and they discovered they both loved telling stories.`,
+                `Encouraged by this discovery, ${personality.name} began opening up too. They shared their own fear about ${personality.fear}. To their amazement, ${emotionalJourney.firstFriend} said, "I feel that way sometimes too!" The ${element} pulsed warmly as both friends felt the relief of being truly understood.`,
                 
-                `By helping others connect, the ${character} learned an important truth: ${lesson}. The ${element} pulsed with warm light every time a new friendship was formed.`,
+                `Soon, ${personality.name} and ${emotionalJourney.firstFriend} noticed ${emotionalJourney.secondFriend} watching them from afar, looking wistful. Instead of keeping their friendship to themselves, they invited the newcomer to join them. "${emotionalJourney.inclusion}," ${personality.name} said warmly, having learned that friendship grows when it's shared.`,
                 
-                `Soon, the entire ${setting} was filled with laughter and joy as old and new friends played together. The ${character} had created the most wonderful community of caring friends.`,
+                `As their circle of authentic friendships grew, ${personality.name} discovered something beautiful: ${emotionalJourney.lesson}. The ${element} glowed brighter with each genuine connection, showing that magic happens when hearts are open and honest.`,
                 
-                `As evening approached, all the friends gathered in a big circle around the ${character}. They shared stories, sang songs, and promised to always look out for each other.`,
+                `Now, whenever a new creature came to the ${setting} looking lonely, ${personality.name} and their friends knew exactly what to do. They would approach with kindness, share something real about themselves, and invite the newcomer into their circle of caring.`,
                 
-                `When it was time for bed, the ${character} placed the ${element} in the center of their circle of friends. Its gentle glow reminded everyone that friendship is the most magical thing of all. The end. Sweet dreams! 🌙✨`
+                `That night, as ${personality.name} held the ${element} close, they smiled thinking about all their true friends. They had learned that friendship isn't about being liked by everyone—it's about being loved for exactly who you are by people who truly matter. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
         }
 
+        function generateFriendshipEmotions() {
+            const scenarios = [
+                {
+                    challenge: 'Many creatures here are afraid to show their true feelings because they think others might not understand',
+                    firstFriend: 'a quiet hedgehog sitting alone by the pond',
+                    firstActivity: 'watch the sunset together',
+                    vulnerability: 'I always feel too prickly and worry that others will get hurt if they get too close to me',
+                    secondFriend: 'a young deer who was grazing alone',
+                    inclusion: 'We were just talking about feeling different sometimes. Would you like to join us?',
+                    lesson: 'real friendship happens when we have the courage to be ourselves and accept others for who they truly are'
+                },
+                {
+                    challenge: 'Everyone seems to have groups already, and newcomers often feel left out',
+                    firstFriend: 'a small sparrow perched alone on a branch',
+                    firstActivity: 'explore the hidden paths of the forest',
+                    vulnerability: 'I moved here recently and everyone already has their friend groups. I don\'t know how to fit in',
+                    secondFriend: 'an elderly tortoise who moved slowly behind the others',
+                    inclusion: 'We know what it feels like to be new or different. There\'s always room for one more friend',
+                    lesson: 'the strongest friendships are built not on what makes us similar, but on accepting and celebrating our differences'
+                },
+                {
+                    challenge: 'Some creatures have been hurt before and find it hard to trust new friends',
+                    firstFriend: 'a cautious rabbit who kept their distance from others',
+                    firstActivity: 'share stories under the starlight',
+                    vulnerability: 'I trusted someone once who wasn\'t kind to me. Now I\'m scared to let anyone get close',
+                    secondFriend: 'a wise old badger who preferred solitude',
+                    inclusion: 'Sometimes the best friends are the ones who understand that trust takes time. You\'re welcome here',
+                    lesson: 'true friendship is patient and gentle, allowing others to heal and open their hearts at their own pace'
+                }
+            ];
+            
+            return getRandomElement(scenarios);
+        }
+
+        function addSensoryDetails(setting, timeOfDay = 'day') {
+            const sensoryDetails = {
+                'enchanted forest': {
+                    day: {
+                        sights: ['dappled sunlight filtering through emerald leaves', 'butterflies dancing between wildflowers', 'moss-covered stones glowing with soft light'],
+                        sounds: ['gentle rustling of leaves', 'melodic bird songs echoing through the trees', 'the soft babbling of a hidden stream'],
+                        smells: ['sweet scent of blooming flowers', 'fresh morning dew on pine needles', 'rich earthy fragrance of the forest floor'],
+                        feelings: ['cool, gentle breeze on their fur', 'soft moss cushioning their steps', 'warm patches of sunlight']
+                    },
+                    evening: {
+                        sights: ['fireflies twinkling like tiny stars', 'golden light filtering through the canopy', 'shadows dancing mysteriously'],
+                        sounds: ['owls hooting softly in the distance', 'crickets chirping their evening song', 'leaves whispering ancient secrets'],
+                        smells: ['crisp evening air', 'the comforting scent of pine', 'sweet fragrance of night-blooming flowers'],
+                        feelings: ['cool evening air on their skin', 'soft grass beneath their paws', 'a gentle breeze carrying forest magic']
+                    }
+                },
+                'magical kingdom': {
+                    day: {
+                        sights: ['gleaming castle towers reaching toward cotton clouds', 'colorful banners fluttering in the breeze', 'crystal clear moats reflecting rainbow light'],
+                        sounds: ['gentle chiming of palace bells', 'cheerful chatter from the marketplace', 'horses clip-clopping on cobblestone paths'],
+                        smells: ['fresh bread from the royal bakery', 'fragrant roses from the castle garden', 'clean mountain air'],
+                        feelings: ['smooth stone walls warmed by sunshine', 'soft velvet curtains', 'cool marble floors under their feet']
+                    }
+                },
+                'underwater world': {
+                    day: {
+                        sights: ['rainbow light streaming through the water', 'coral gardens blooming in brilliant colors', 'schools of silver fish swimming in perfect harmony'],
+                        sounds: ['gentle bubbling and gurgling', 'the soft swoosh of fins through water', 'whale songs echoing from afar'],
+                        smells: ['the fresh, clean scent of ocean water', 'the salty tang of sea breeze'],
+                        feelings: ['cool water flowing gently around them', 'the tickle of seaweed on their fins', 'the weightless feeling of floating']
+                    }
+                }
+            };
+            
+            const details = sensoryDetails[setting]?.[timeOfDay] || sensoryDetails['enchanted forest']['day'];
+            return {
+                sight: getRandomElement(details.sights),
+                sound: getRandomElement(details.sounds),
+                smell: getRandomElement(details.smells),
+                feeling: getRandomElement(details.feelings)
+            };
+        }
+
+        function createEmotionalDialogue(character, emotion, context) {
+            const dialoguePatterns = {
+                nervous: [
+                    `"I... I hope I'm doing this right," ${character} whispered softly.`,
+                    `"What if they don't like me?" ${character} wondered aloud, their voice barely audible.`,
+                    `"Maybe this was a mistake," ${character} said, fidgeting with their ${context}.`
+                ],
+                hopeful: [
+                    `"I think... I think this might actually work," ${character} said, their voice growing stronger.`,
+                    `"There's something special happening here," ${character} murmured with growing excitement.`,
+                    `"I can feel it in my heart," ${character} said, eyes sparkling with possibility.`
+                ],
+                determined: [
+                    `"I won't give up," ${character} declared, straightening their shoulders.`,
+                    `"Someone needs help, and I can make a difference," ${character} said with quiet conviction.`,
+                    `"This is important," ${character} said firmly, their voice filled with purpose.`
+                ],
+                grateful: [
+                    `"Thank you for believing in me," ${character} said, their voice warm with emotion.`,
+                    `"I never knew friendship could feel like this," ${character} whispered in wonder.`,
+                    `"You've helped me discover something beautiful about myself," ${character} said softly.`
+                ]
+            };
+            
+            const options = dialoguePatterns[emotion] || dialoguePatterns['hopeful'];
+            return getRandomElement(options);
+        }
+
         function createDiscoveryStory(character, setting, themes, element) {
-            const title = `${capitalize(character)} and the Secret of ${formatSettingForTitle(setting)}`;
+            const personality = generateCharacterPersonality(character, themes);
+            const sensoryMorning = addSensoryDetails(setting, 'day');
+            const sensoryEvening = addSensoryDetails(setting, 'evening');
+            const discovery = generateDiscoveryChallenge(themes, setting);
+            const title = `${personality.name} and the Hidden Truth of ${formatSettingForTitle(setting)}`;
             
             const pages = [
-                `Long ago, in a mysterious ${setting}, a curious ${character} loved to explore and discover new wonders. Every day brought exciting adventures and amazing surprises.`,
+                `Every morning in the ${setting}, a curious ${character} named ${personality.name} would wake to the ${sensoryMorning.sound}. ${personality.name} was ${personality.trait}, but they had always felt that something important was missing from their world. They spent their days ${personality.hobby}, always searching for ${discovery.seeking}.`,
                 
-                `While exploring a hidden corner of the ${setting}, the ${character} stumbled upon an ancient ${element} covered in sparkly dust. It seemed to be waiting just for them.`,
+                `One day, while following a path they'd never noticed before, ${personality.name} discovered ${discovery.hiddenPlace}. The air was thick with ${sensoryMorning.smell}, and they could feel ${sensoryMorning.feeling}. There, almost completely hidden, was an ancient ${element} that seemed to pulse with mysterious energy.`,
                 
-                `As soon as the ${character} lifted the ${element}, the world around them became more magical. Colors seemed brighter, sounds became music, and they could sense the happiness of all living things.`,
+                `As ${personality.name} carefully picked up the ${element}, it began to warm in their hands. Suddenly, visions flooded their mind—they could see the ${setting} as it once was, vibrant and full of ${discovery.pastMagic}. ${createEmotionalDialogue(personality.name, 'nervous', element)} But the ${element} responded with gentle warmth, encouraging them to continue.`,
                 
-                `The ${element} whispered ancient secrets about the ${setting}. It told stories of how ${themes.split(',')[0].trim()} had kept this magical place safe and beautiful for countless years.`,
+                `The ${element} revealed a troubling truth: "${discovery.problem}," it whispered sadly. "${personality.name}, the ${setting} needs someone who truly cares about ${themes.split(',')[0].trim()} to help restore what has been lost. But it won't be easy—it requires great patience and understanding."`,
                 
-                `Excited to learn more, the ${character} began to explore with new eyes. They discovered that every flower, tree, and creature in the ${setting} had its own special role in making the magic work.`,
+                `${personality.name} felt overwhelmed by the enormity of the task, especially given their secret worry about ${personality.fear}. ${createEmotionalDialogue(personality.name, 'determined', 'mission')} They decided to start small, doing exactly what the ${element} suggested: ${discovery.firstStep}.`,
                 
-                `The ${character} met an elderly turtle who shared wisdom about caring for others. They learned from busy bees about working together, and watched birds demonstrate the joy of helping friends.`,
+                `At first, nothing seemed to change. ${personality.name} began to doubt themselves. But then they noticed something subtle—${discovery.firstSign}. The ${element} glowed softly, and ${personality.name} felt ${sensoryMorning.feeling} as they realized their efforts were making a real difference.`,
                 
-                `Each discovery taught the ${character} something valuable: ${lesson}. The ${element} recorded every lesson in its glowing heart, creating a treasury of wisdom.`,
+                `Encouraged by this small success, ${personality.name} continued their gentle work. Other creatures began to notice the changes. ${discovery.ally} approached them and said, "${discovery.allyWords}" Together, they worked to spread ${themes.split(',')[0].trim()} throughout the ${setting}.`,
                 
-                `As days passed, the ${character} became known throughout the ${setting} as a great teacher and friend. Creatures would come from far and wide to learn from their gentle wisdom.`,
+                `As more creatures joined their efforts, ${personality.name} discovered something profound: ${discovery.deepLesson}. The ${element} pulsed with brilliant light, showing them that the real magic had been growing in their own heart all along. ${createEmotionalDialogue(personality.name, 'grateful', 'journey')}`,
                 
-                `The ${character} realized that the greatest discovery wasn't the magical ${element}, but the knowledge that everyone has wisdom to share and kindness to give.`,
+                `Seasons passed, and the ${setting} was transformed. The ${sensoryEvening.sound} now carried notes of joy, and the ${sensoryEvening.smell} was sweeter than ever before. ${personality.name} had learned that discovery isn't just about finding new things—it's about uncovering the potential for goodness that exists everywhere.`,
                 
-                `Years later, when new young explorers came to the ${setting}, they would find the ${element} waiting for them too. The cycle of discovery and learning would continue forever. The end. Sweet dreams! 🌙✨`
+                `As ${personality.name} placed the ${element} in a place of honor where all could see it, they smiled. The greatest discovery of all was learning that every small act of ${themes.split(',')[0].trim()} creates ripples of positive change that can transform entire worlds. The end. Sweet dreams! 🌙✨`
             ];
             
             return { title, pages };
+        }
+
+        function generateDiscoveryChallenge(themes, setting) {
+            const challenges = {
+                'kindness': {
+                    seeking: 'a way to bring more joy and compassion to their community',
+                    hiddenPlace: 'a forgotten garden where flowers had stopped blooming',
+                    pastMagic: 'creatures helping each other and flowers that bloomed in response to every kind act',
+                    problem: 'The magic of kindness has been fading because creatures have forgotten how to care for one another',
+                    firstStep: 'tending to one withered flower with patient, loving care',
+                    firstSign: 'a single flower bud beginning to unfurl, responding to their gentle attention',
+                    ally: 'an elderly butterfly with faded wings',
+                    allyWords: 'I remember when this garden was full of life. Your kindness is awakening the old magic',
+                    deepLesson: 'kindness is like sunlight—it helps everything grow, but only when given freely and patiently'
+                },
+                'courage': {
+                    seeking: 'the strength to help others face their fears',
+                    hiddenPlace: 'a cavern where the walls shimmered with crystalline formations',
+                    pastMagic: 'brave creatures standing together against darkness, their courage lighting up the entire realm',
+                    problem: 'Fear has been spreading through the land because everyone forgot that courage is stronger when shared',
+                    firstStep: 'sharing their own fears honestly with someone who seemed afraid',
+                    firstSign: 'another creature taking a small brave step they had been afraid to take',
+                    ally: 'a young mouse who had been hiding from the world',
+                    allyWords: 'You showed me that being scared doesn\'t make you weak—hiding from fear does',
+                    deepLesson: 'true courage isn\'t about never being afraid, but about caring enough to act despite the fear'
+                },
+                'sharing': {
+                    seeking: 'a way to bring abundance and generosity back to their world',
+                    hiddenPlace: 'an ancient storehouse with empty shelves and dusty corners',
+                    pastMagic: 'overflowing abundance where every creature shared freely and no one ever went without',
+                    problem: 'The flow of generosity has slowed because creatures began hoarding instead of sharing',
+                    firstStep: 'giving away something precious to someone who needed it more',
+                    firstSign: 'the empty shelves beginning to fill with gifts left by grateful creatures',
+                    ally: 'a wise old badger who remembered the days of plenty',
+                    allyWords: 'You\'ve reminded us that sharing creates more abundance than keeping ever could',
+                    deepLesson: 'the more you share, the more the universe provides, because generosity creates cycles of abundance'
+                }
+            };
+            
+            const theme = themes.split(',')[0].trim();
+            return challenges[theme] || challenges['kindness'];
         }
 
         function createMysteryStory(character, setting, themes, element) {
