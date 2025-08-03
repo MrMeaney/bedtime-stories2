@@ -2968,8 +2968,8 @@ Write the complete 10-paragraph story now:
                                  alt="Story illustration for page ${index + 1}" 
                                  class="page-illustration"
                                  style="opacity: 1;"
-                                 onload="this.style.opacity='1'"
-                                 onerror="this.src='${generateReliableStoryIllustration(index)}'">
+                                 onload="console.log('Image loaded for page ${index + 1}'); this.style.opacity='1'"
+                                 onerror="console.error('Image failed for page ${index + 1}'); this.src='${generateReliableStoryIllustration(index)}'">
                         </div>
                         <div class="page-text">${pageText}</div>
                     </div>
@@ -3089,21 +3089,30 @@ Write the complete 10-paragraph story now:
             const primaryColor = colors[pageIndex % colors.length];
             const secondaryColor = colors[(pageIndex + 3) % colors.length];
             
-            const illustrations = [
-                createCharacterIntroIllustration(pageIndex, primaryColor, secondaryColor),
-                createDiscoveryIllustration(pageIndex, primaryColor, secondaryColor),
-                createMagicalMomentIllustration(pageIndex, primaryColor, secondaryColor),
-                createChallengeIllustration(pageIndex, primaryColor, secondaryColor),
-                createGrowthIllustration(pageIndex, primaryColor, secondaryColor),
-                createFriendshipIllustration(pageIndex, primaryColor, secondaryColor),
-                createResolutionIllustration(pageIndex, primaryColor, secondaryColor),
-                createCelebrationIllustration(pageIndex, primaryColor, secondaryColor),
-                createWisdomIllustration(pageIndex, primaryColor, secondaryColor),
-                createPeacefulEndingIllustration(pageIndex, primaryColor, secondaryColor)
-            ];
-            
-            const selectedIllustration = illustrations[pageIndex % illustrations.length];
-            return `data:image/svg+xml;base64,${btoa(selectedIllustration)}`;
+            try {
+                const illustrations = [
+                    createCharacterIntroIllustration(pageIndex, primaryColor, secondaryColor),
+                    createDiscoveryIllustration(pageIndex, primaryColor, secondaryColor),
+                    createMagicalMomentIllustration(pageIndex, primaryColor, secondaryColor),
+                    createChallengeIllustration(pageIndex, primaryColor, secondaryColor),
+                    createGrowthIllustration(pageIndex, primaryColor, secondaryColor),
+                    createFriendshipIllustration(pageIndex, primaryColor, secondaryColor),
+                    createResolutionIllustration(pageIndex, primaryColor, secondaryColor),
+                    createCelebrationIllustration(pageIndex, primaryColor, secondaryColor),
+                    createWisdomIllustration(pageIndex, primaryColor, secondaryColor),
+                    createPeacefulEndingIllustration(pageIndex, primaryColor, secondaryColor)
+                ];
+                
+                const selectedIllustration = illustrations[pageIndex % illustrations.length];
+                
+                // Use URL encoding instead of base64 for better compatibility
+                const encodedSVG = encodeURIComponent(selectedIllustration);
+                return `data:image/svg+xml,${encodedSVG}`;
+            } catch (error) {
+                console.error('Error generating SVG illustration:', error);
+                // Fallback to simple colored rectangle
+                return `data:image/svg+xml,${encodeURIComponent(`<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="${primaryColor}" rx="10"/><text x="200" y="150" text-anchor="middle" fill="white" font-family="sans-serif" font-size="24">🌟</text></svg>`)}`;
+            }
         }
 
         // Additional illustration functions (simplified versions for now)
