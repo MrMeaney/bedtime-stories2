@@ -3265,6 +3265,82 @@ Write the complete 10-paragraph story now:
             return createCharacterIntroIllustration(pageIndex, '#667eea', '#764ba2');
         }
 
+        function hashString(str) {
+            let hash = 0;
+            if (str.length === 0) return hash;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        function preloadImages(story) {
+            // Since we're using SVG illustrations that are generated instantly,
+            // this function doesn't need to do actual preloading
+            // But we keep it for compatibility
+            console.log('Preloading images for story:', story.title);
+            return Promise.resolve();
+        }
+
+        function showBookPage(pageIndex) {
+            const pages = document.querySelectorAll('.book-page');
+            pages.forEach((page, index) => {
+                page.classList.toggle('active', index === pageIndex);
+            });
+            
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            if (prevBtn) prevBtn.disabled = pageIndex === 0;
+            if (nextBtn) nextBtn.disabled = pageIndex === pages.length - 1;
+            
+            // Update progress bar
+            updateProgressBar(pageIndex, pages.length);
+        }
+
+        function nextPage() {
+            if (currentPageIndex < document.querySelectorAll('.book-page').length - 1) {
+                currentPageIndex++;
+                showBookPage(currentPageIndex);
+            }
+        }
+
+        function previousPage() {
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                showBookPage(currentPageIndex);
+            }
+        }
+
+        function closeBook() {
+            document.getElementById('bookMode').classList.remove('active');
+            document.removeEventListener('keydown', handleBookKeyboard);
+        }
+
+        function updateProgressBar(currentPage, totalPages) {
+            const progressBar = document.querySelector('.progress-fill');
+            if (progressBar) {
+                const progress = (currentPage / (totalPages - 1)) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+        }
+
+        function handleBookKeyboard(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                previousPage();
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                nextPage();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeBook();
+            }
+        }
+
     </script>
 </body>
 </html>
