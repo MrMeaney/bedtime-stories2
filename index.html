@@ -2971,6 +2971,7 @@ Write the complete 10-paragraph story now:
                 
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
                 const svgImageUrl = generateReliableStoryIllustration(index);
+                console.log(`Generated SVG for page ${index + 1}:`, svgImageUrl.substring(0, 100) + '...');
                 
                 page.innerHTML = `
                     <div class="page-content">
@@ -2979,8 +2980,8 @@ Write the complete 10-paragraph story now:
                                  alt="Story illustration for page ${index + 1}" 
                                  class="page-illustration"
                                  style="opacity: 1;"
-                                 onload="console.log('Image loaded for page ${index + 1}'); this.style.opacity='1'"
-                                 onerror="console.error('Image failed for page ${index + 1}'); this.src='${generateReliableStoryIllustration(index)}'">
+                                 onload="console.log('Image loaded successfully for page ${index + 1}'); this.style.opacity='1'"
+                                 onerror="console.error('Image failed for page ${index + 1}, trying fallback'); this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect width=%22400%22 height=%22300%22 fill=%22%23667eea%22/%3E%3Ctext x=%22200%22 y=%22150%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2224%22%3E🎨%3C/text%3E%3C/svg%3E'"
                         </div>
                         <div class="page-text">${pageText}</div>
                     </div>
@@ -3095,34 +3096,34 @@ Write the complete 10-paragraph story now:
         }
 
         function generateReliableStoryIllustration(pageIndex) {
-            // Create beautiful, always-working SVG illustrations
+            // Create simple, always-working SVG illustrations
             const colors = ['#667eea', '#764ba2', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
             const primaryColor = colors[pageIndex % colors.length];
-            const secondaryColor = colors[(pageIndex + 3) % colors.length];
+            const secondaryColor = colors[(pageIndex + 2) % colors.length];
+            
+            // Create a simple but beautiful SVG that's guaranteed to work
+            const simpleSVG = `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+                <defs>
+                    <linearGradient id="grad${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${primaryColor};stop-opacity:0.8" />
+                        <stop offset="100%" style="stop-color:${secondaryColor};stop-opacity:0.6" />
+                    </linearGradient>
+                </defs>
+                <rect width="400" height="300" fill="url(#grad${pageIndex})" rx="15"/>
+                <circle cx="100" cy="100" r="30" fill="white" opacity="0.3"/>
+                <circle cx="300" cy="80" r="20" fill="white" opacity="0.4"/>
+                <circle cx="320" cy="200" r="25" fill="white" opacity="0.3"/>
+                <text x="200" y="160" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="32" opacity="0.9">📖</text>
+                <text x="200" y="200" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" opacity="0.7">Page ${pageIndex + 1}</text>
+            </svg>`;
             
             try {
-                const illustrations = [
-                    createCharacterIntroIllustration(pageIndex, primaryColor, secondaryColor),
-                    createDiscoveryIllustration(pageIndex, primaryColor, secondaryColor),
-                    createMagicalMomentIllustration(pageIndex, primaryColor, secondaryColor),
-                    createChallengeIllustration(pageIndex, primaryColor, secondaryColor),
-                    createGrowthIllustration(pageIndex, primaryColor, secondaryColor),
-                    createFriendshipIllustration(pageIndex, primaryColor, secondaryColor),
-                    createResolutionIllustration(pageIndex, primaryColor, secondaryColor),
-                    createCelebrationIllustration(pageIndex, primaryColor, secondaryColor),
-                    createWisdomIllustration(pageIndex, primaryColor, secondaryColor),
-                    createPeacefulEndingIllustration(pageIndex, primaryColor, secondaryColor)
-                ];
-                
-                const selectedIllustration = illustrations[pageIndex % illustrations.length];
-                
-                // Use URL encoding instead of base64 for better compatibility
-                const encodedSVG = encodeURIComponent(selectedIllustration);
-                return `data:image/svg+xml,${encodedSVG}`;
+                // Use URL encoding which is more reliable than base64
+                return `data:image/svg+xml,${encodeURIComponent(simpleSVG)}`;
             } catch (error) {
-                console.error('Error generating SVG illustration:', error);
-                // Fallback to simple colored rectangle
-                return `data:image/svg+xml,${encodeURIComponent(`<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="${primaryColor}" rx="10"/><text x="200" y="150" text-anchor="middle" fill="white" font-family="sans-serif" font-size="24">🌟</text></svg>`)}`;
+                console.error('Error encoding SVG:', error);
+                // Ultimate fallback - minimal SVG
+                return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='${primaryColor}'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='white' font-size='24'%3E🌟%3C/text%3E%3C/svg%3E`;
             }
         }
 
