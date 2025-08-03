@@ -293,11 +293,11 @@
         }
 
         .book-page:not(.cover-page) .page-content {
-            display: grid;
-            grid-template-columns: 1fr 280px;
-            gap: 40px;
-            align-items: start;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
             flex: 1;
+            padding: 0;
         }
 
         @keyframes pageFlip {
@@ -307,26 +307,35 @@
         }
 
         .page-text {
-            font-size: 1.4em;
-            line-height: 1.8;
+            font-size: 1.3em;
+            line-height: 1.7;
             color: #2d3748;
-            text-align: justify;
-            text-indent: 2em;
+            text-align: left;
+            text-indent: 0;
+            order: 2;
+            margin: 0 40px;
         }
 
         .page-illustration {
-            width: 280px;
-            height: 200px;
-            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 4/3;
+            border-radius: 0;
             object-fit: cover;
-            border: 5px solid #e2e8f0;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border: none;
+            box-shadow: none;
             align-self: center;
-            transition: transform 0.3s ease;
+            transition: opacity 0.3s ease;
+            margin: 0;
         }
 
-        .page-illustration:hover {
-            transform: scale(1.05);
+        .image-container {
+            width: 100%;
+            margin: 0;
+            text-align: center;
+            background: none;
+            order: 1;
         }
 
         .page-number {
@@ -531,14 +540,18 @@
         }
             
             .page-illustration {
-                width: 250px;
-                height: 180px;
-                margin: 20px auto;
+                max-width: 300px;
+                margin: 10px auto;
             }
             
             .page-text {
                 font-size: 1.2em;
                 text-indent: 0;
+                margin: 0 20px;
+            }
+
+            .image-container {
+                margin: 0 0 20px 0;
             }
 
             .book-navigation {
@@ -2922,13 +2935,15 @@ Write the complete 10-paragraph story now:
                 
                 page.innerHTML = `
                     <div class="page-content">
-                        <div class="page-text">${pageText}</div>
                         <div class="image-container" data-page-index="${index}">
                             <img src="${svgImageUrl}" 
                                  alt="Story illustration for page ${index + 1}" 
                                  class="page-illustration"
-                                 style="width: 280px; height: 200px; border-radius: 15px; opacity: 1;">
+                                 style="opacity: 1;"
+                                 onload="this.style.opacity='1'"
+                                 onerror="this.src='${generateReliableStoryIllustration(index)}'">
                         </div>
+                        <div class="page-text">${pageText}</div>
                     </div>
                     <div class="page-number">Page ${index + 1}</div>
                 `;
@@ -3036,9 +3051,168 @@ Write the complete 10-paragraph story now:
         }
 
         function generateImageUrl(prompt, pageIndex, storyId) {
-            // For now, use beautiful SVG illustrations that always work
-            // We can add AI services back later once they're working reliably
-            return generateStoryIllustration(prompt, pageIndex);
+            // Always use reliable SVG illustrations for consistent experience
+            return generateReliableStoryIllustration(pageIndex);
+        }
+
+        function generateReliableStoryIllustration(pageIndex) {
+            // Create beautiful, always-working SVG illustrations
+            const colors = ['#667eea', '#764ba2', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+            const primaryColor = colors[pageIndex % colors.length];
+            const secondaryColor = colors[(pageIndex + 3) % colors.length];
+            
+            const illustrations = [
+                createCharacterIntroIllustration(pageIndex, primaryColor, secondaryColor),
+                createDiscoveryIllustration(pageIndex, primaryColor, secondaryColor),
+                createMagicalMomentIllustration(pageIndex, primaryColor, secondaryColor),
+                createChallengeIllustration(pageIndex, primaryColor, secondaryColor),
+                createGrowthIllustration(pageIndex, primaryColor, secondaryColor),
+                createFriendshipIllustration(pageIndex, primaryColor, secondaryColor),
+                createResolutionIllustration(pageIndex, primaryColor, secondaryColor),
+                createCelebrationIllustration(pageIndex, primaryColor, secondaryColor),
+                createWisdomIllustration(pageIndex, primaryColor, secondaryColor),
+                createPeacefulEndingIllustration(pageIndex, primaryColor, secondaryColor)
+            ];
+            
+            const selectedIllustration = illustrations[pageIndex % illustrations.length];
+            return `data:image/svg+xml;base64,${btoa(selectedIllustration)}`;
+        }
+
+        // Additional illustration functions (simplified versions for now)
+        function createChallengeIllustration(pageIndex, primary, secondary) {
+            return createMagicalMomentIllustration(pageIndex, primary, secondary);
+        }
+
+        function createGrowthIllustration(pageIndex, primary, secondary) {
+            return createDiscoveryIllustration(pageIndex, primary, secondary);
+        }
+
+        function createFriendshipIllustration(pageIndex, primary, secondary) {
+            return createCharacterIntroIllustration(pageIndex, primary, secondary);
+        }
+
+        function createResolutionIllustration(pageIndex, primary, secondary) {
+            return createMagicalMomentIllustration(pageIndex, primary, secondary);
+        }
+
+        function createCelebrationIllustration(pageIndex, primary, secondary) {
+            return createCharacterIntroIllustration(pageIndex, primary, secondary);
+        }
+
+        function createWisdomIllustration(pageIndex, primary, secondary) {
+            return createDiscoveryIllustration(pageIndex, primary, secondary);
+        }
+
+        function createPeacefulEndingIllustration(pageIndex, primary, secondary) {
+            return createMagicalMomentIllustration(pageIndex, primary, secondary);
+        }
+
+        function createCharacterIntroIllustration(pageIndex, primary, secondary) {
+            return `
+                <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Soft background -->
+                    <defs>
+                        <linearGradient id="bg${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:${primary};stop-opacity:0.1" />
+                            <stop offset="100%" style="stop-color:${secondary};stop-opacity:0.2" />
+                        </linearGradient>
+                        <filter id="glow${pageIndex}">
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge> 
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/> 
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    
+                    <rect width="400" height="300" fill="url(#bg${pageIndex})" rx="0"/>
+                    
+                    <!-- Main character silhouette -->
+                    <circle cx="200" cy="150" r="40" fill="${primary}" opacity="0.3" filter="url(#glow${pageIndex})"/>
+                    <circle cx="200" cy="140" r="25" fill="${primary}" opacity="0.5"/>
+                    
+                    <!-- Magical sparkles -->
+                    <circle cx="150" cy="100" r="3" fill="${secondary}" opacity="0.8"/>
+                    <circle cx="250" cy="120" r="2" fill="${primary}" opacity="0.9"/>
+                    <circle cx="170" cy="200" r="2.5" fill="${secondary}" opacity="0.7"/>
+                    <circle cx="230" cy="190" r="2" fill="${primary}" opacity="0.8"/>
+                    
+                    <!-- Setting elements -->
+                    <ellipse cx="200" cy="250" rx="100" ry="20" fill="${primary}" opacity="0.2"/>
+                    
+                    <text x="200" y="280" text-anchor="middle" font-family="serif" font-size="12" fill="${primary}" opacity="0.6">Chapter ${pageIndex + 1}</text>
+                </svg>
+            `.trim();
+        }
+
+        function createDiscoveryIllustration(pageIndex, primary, secondary) {
+            return `
+                <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="discovery${pageIndex}" cx="50%" cy="40%">
+                            <stop offset="0%" style="stop-color:${secondary};stop-opacity:0.3" />
+                            <stop offset="100%" style="stop-color:${primary};stop-opacity:0.1" />
+                        </radialGradient>
+                    </defs>
+                    
+                    <rect width="400" height="300" fill="url(#discovery${pageIndex})"/>
+                    
+                    <!-- Glowing magical object -->
+                    <circle cx="200" cy="120" r="15" fill="${secondary}" opacity="0.8"/>
+                    <circle cx="200" cy="120" r="25" fill="none" stroke="${secondary}" stroke-width="2" opacity="0.4"/>
+                    <circle cx="200" cy="120" r="35" fill="none" stroke="${secondary}" stroke-width="1" opacity="0.2"/>
+                    
+                    <!-- Emanating light rays -->
+                    <line x1="200" y1="85" x2="200" y2="65" stroke="${secondary}" stroke-width="3" opacity="0.6"/>
+                    <line x1="235" y1="120" x2="255" y2="120" stroke="${secondary}" stroke-width="3" opacity="0.6"/>
+                    <line x1="165" y1="120" x2="145" y2="120" stroke="${secondary}" stroke-width="3" opacity="0.6"/>
+                    <line x1="225" y1="95" x2="240" y2="80" stroke="${secondary}" stroke-width="2" opacity="0.5"/>
+                    <line x1="175" y1="95" x2="160" y2="80" stroke="${secondary}" stroke-width="2" opacity="0.5"/>
+                    
+                    <!-- Ground/environment -->
+                    <ellipse cx="200" cy="250" rx="120" ry="25" fill="${primary}" opacity="0.3"/>
+                    <ellipse cx="200" cy="250" rx="80" ry="15" fill="${primary}" opacity="0.2"/>
+                    
+                    <!-- Character reaching toward object -->
+                    <ellipse cx="150" cy="200" rx="20" ry="30" fill="${primary}" opacity="0.4"/>
+                    
+                    <text x="200" y="285" text-anchor="middle" font-family="serif" font-size="11" fill="${primary}" opacity="0.7">A magical discovery</text>
+                </svg>
+            `.trim();
+        }
+
+        function createMagicalMomentIllustration(pageIndex, primary, secondary) {
+            return `
+                <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="magic${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:${secondary};stop-opacity:0.2" />
+                            <stop offset="50%" style="stop-color:${primary};stop-opacity:0.1" />
+                            <stop offset="100%" style="stop-color:${secondary};stop-opacity:0.3" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <rect width="400" height="300" fill="url(#magic${pageIndex})"/>
+                    
+                    <!-- Swirling magic -->
+                    <path d="M 100 150 Q 150 100, 200 150 T 300 150" stroke="${primary}" stroke-width="3" fill="none" opacity="0.6"/>
+                    <path d="M 80 170 Q 140 120, 200 170 T 320 170" stroke="${secondary}" stroke-width="2" fill="none" opacity="0.5"/>
+                    
+                    <!-- Magical particles -->
+                    <circle cx="120" cy="130" r="2" fill="${primary}" opacity="0.8"/>
+                    <circle cx="180" cy="110" r="3" fill="${secondary}" opacity="0.9"/>
+                    <circle cx="220" cy="130" r="2" fill="${primary}" opacity="0.7"/>
+                    <circle cx="280" cy="140" r="2.5" fill="${secondary}" opacity="0.8"/>
+                    <circle cx="160" cy="180" r="2" fill="${primary}" opacity="0.6"/>
+                    <circle cx="240" cy="170" r="3" fill="${secondary}" opacity="0.8"/>
+                    
+                    <!-- Central magical energy -->
+                    <circle cx="200" cy="150" r="8" fill="${secondary}" opacity="0.7"/>
+                    <circle cx="200" cy="150" r="4" fill="white" opacity="0.9"/>
+                    
+                    <text x="200" y="280" text-anchor="middle" font-family="serif" font-size="11" fill="${primary}" opacity="0.7">Magic awakens</text>
+                </svg>
+            `.trim();
         }
 
         function generatePollinationsUrl(prompt, pageIndex, storyId) {
