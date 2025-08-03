@@ -2872,30 +2872,47 @@ Write the complete 10-paragraph story now:
 
         function openStoryBook() {
             console.log('openStoryBook called, currentStory:', currentStory);
+            alert('Step 1: openStoryBook called with story: ' + (currentStory ? currentStory.title : 'null'));
+            
             if (!currentStory) {
                 console.error('No current story available!');
                 alert('No story available. Please generate a story first.');
                 return;
             }
             
+            alert('Step 2: About to create book pages');
             // Create book pages
             createBookPages(currentStory);
             
+            alert('Step 3: About to show book mode');
             // Show book mode
-            document.getElementById('bookMode').classList.add('active');
+            const bookMode = document.getElementById('bookMode');
+            if (!bookMode) {
+                alert('ERROR: bookMode element not found!');
+                return;
+            }
+            bookMode.classList.add('active');
             
+            alert('Step 4: About to initialize navigation');
             // Initialize book navigation
             currentPageIndex = 0;
             totalPages = currentStory.pages.length + 1; // +1 for cover page
             updateBookNavigation();
             showBookPage(0);
             
+            alert('Step 5: Book should be open now');
             // Add keyboard navigation
             document.addEventListener('keydown', handleBookKeyboard);
         }
 
         function createBookPages(story) {
+            console.log('createBookPages called with:', story);
             const bookPages = document.getElementById('bookPages');
+            if (!bookPages) {
+                alert('ERROR: bookPages element not found!');
+                return;
+            }
+            alert('createBookPages: Found bookPages element');
             bookPages.innerHTML = '';
             
             // Store story globally for image generation
@@ -2904,6 +2921,7 @@ Write the complete 10-paragraph story now:
             // Start preloading images immediately
             preloadImages(story);
             const storyId = hashString(story.title + story.character + story.setting);
+            alert('createBookPages: About to create cover page');
             
             // Create cover page
             const coverPage = document.createElement('div');
