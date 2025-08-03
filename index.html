@@ -2982,8 +2982,6 @@ Write the complete 10-paragraph story now:
             // Store story globally for image generation
             window.currentStory = story;
             
-            // Start preloading images immediately
-            preloadImages(story);
             const storyId = hashString(story.title + story.character + story.setting);
             
             // Create cover page
@@ -3031,9 +3029,9 @@ Write the complete 10-paragraph story now:
                     aiImageUrl = window.preloadedImages[index].url;
                     console.log(`Using preloaded image for page ${index + 1}`);
                 } else {
-                    const imagePrompt = generateImagePrompt(story.character, story.setting, index);
-                    aiImageUrl = generateAIImage(imagePrompt, index);
-                    console.log(`Generated new AI image for page ${index + 1}`);
+                    // Use fallback image instead of generating new ones
+                    aiImageUrl = generateFallbackImage(index);
+                    console.log(`Using fallback image for page ${index + 1} (preload not available)`);
                 }
                 
                 page.innerHTML = `
@@ -3192,6 +3190,7 @@ Write the complete 10-paragraph story now:
         }
 
         function generateAIImage(prompt, pageIndex, attempt = 0) {
+            console.log(`🚨 generateAIImage called for page ${pageIndex + 1}, attempt ${attempt + 1}`);
             const cleanPrompt = encodeURIComponent(prompt);
             const seed = pageIndex + Date.now() + attempt * 1000; // Different seed for retries
             
@@ -3231,10 +3230,11 @@ Write the complete 10-paragraph story now:
         function preloadStoryImages(story) {
             // Prevent duplicate loading
             if (window.imageLoadingInProgress) {
-                console.log('Image loading already in progress, skipping...');
+                console.log('⚠️ Image loading already in progress, skipping...');
                 return;
             }
             
+            console.log(`🎨 Starting image preload for ${Math.min(story.pages.length, 6)} pages`);
             window.imageLoadingInProgress = true;
             
             // Reset progress tracking and limit to 6 pages max
@@ -3244,6 +3244,7 @@ Write the complete 10-paragraph story now:
             
             // Generate and preload all images with retry logic (max 6 pages)
             story.pages.slice(0, 6).forEach((pageText, index) => {
+                console.log(`📸 Preloading image ${index + 1}/${totalImagesToLoad}`);
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
                 
                 const promise = tryLoadImageWithRetry(imagePrompt, index, 3); // Try up to 3 times
