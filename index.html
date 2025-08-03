@@ -273,13 +273,15 @@
         }
 
         .book-page.cover-page {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a855f7 100%);
-            background-image: none;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #667eea 50%, #764ba2 75%, #8b5a9e 100%);
+            background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                             radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
             justify-content: center;
             align-items: center;
             text-align: center;
             position: relative;
             overflow: hidden;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.1);
         }
 
         .book-page.cover-page .page-content {
@@ -443,8 +445,10 @@
         }
 
         .cover-decoration {
-            font-size: 3em;
-            margin: 20px 0;
+            font-size: 3.2em;
+            margin: 25px 0;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
         }
 
         .cover-sparkles {
@@ -464,54 +468,82 @@
 
 
         .cover-illustration {
-            width: 120px;
-            height: 120px;
-            margin: 20px auto;
+            width: 140px;
+            height: 140px;
+            margin: 30px auto;
             border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 3px solid rgba(255,255,255,0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3em;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            font-size: 3.5em;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.1), inset 0 2px 8px rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cover-illustration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
 
         .cover-title {
-            font-size: 2.8em;
-            color: white;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
-            font-weight: bold;
-            background: linear-gradient(45deg, #fff, #fffacd);
+            font-size: 3.2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 30%, #e6f3ff 70%, #ffffff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.2;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
+            margin: 30px 0 25px 0;
+            line-height: 1.1;
             padding: 0 20px;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            letter-spacing: 0.5px;
         }
 
         .cover-subtitle {
-            font-size: 1.2em;
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 30px;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+            font-size: 1.4em;
+            color: rgba(255,255,255,0.95);
+            margin: 25px 0 35px 0;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.4);
             font-style: italic;
-            font-weight: 300;
-        }
-
-        .cover-character-info {
-            font-size: 1em;
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 20px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
-            background: rgba(255,255,255,0.1);
-            padding: 10px 20px;
+            font-weight: 400;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            letter-spacing: 0.3px;
+            background: rgba(255,255,255,0.08);
+            padding: 12px 24px;
             border-radius: 25px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .cover-character-info {
+            font-size: 1.1em;
+            color: rgba(255,255,255,0.9);
+            margin: 20px 0 30px 0;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+            padding: 15px 28px;
+            border-radius: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.25);
+            font-weight: 500;
+            letter-spacing: 0.2px;
         }
 
         /* Responsive design */
