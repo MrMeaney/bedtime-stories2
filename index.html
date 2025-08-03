@@ -3017,9 +3017,9 @@ Write the complete 10-paragraph story now:
             `;
             bookPages.appendChild(coverPage);
             
-            // Create story pages with placeholders
-            console.log('Creating story pages, total pages:', story.pages.length);
-            story.pages.forEach((pageText, index) => {
+            // Create story pages with placeholders (max 6 pages)
+            console.log('Creating story pages, total pages:', Math.min(story.pages.length, 6));
+            story.pages.slice(0, 6).forEach((pageText, index) => {
                 console.log(`Creating page ${index + 1} with text:`, pageText.substring(0, 50) + '...');
                 const page = document.createElement('div');
                 page.className = 'book-page';
@@ -3229,13 +3229,21 @@ Write the complete 10-paragraph story now:
         }
 
         function preloadStoryImages(story) {
-            // Reset progress tracking
+            // Prevent duplicate loading
+            if (window.imageLoadingInProgress) {
+                console.log('Image loading already in progress, skipping...');
+                return;
+            }
+            
+            window.imageLoadingInProgress = true;
+            
+            // Reset progress tracking and limit to 6 pages max
             completedImages = 0;
-            totalImagesToLoad = story.pages.length;
+            totalImagesToLoad = Math.min(story.pages.length, 6);
             const imagePromises = [];
             
-            // Generate and preload all images with retry logic
-            story.pages.forEach((pageText, index) => {
+            // Generate and preload all images with retry logic (max 6 pages)
+            story.pages.slice(0, 6).forEach((pageText, index) => {
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
                 
                 const promise = tryLoadImageWithRetry(imagePrompt, index, 3); // Try up to 3 times
@@ -3246,10 +3254,12 @@ Write the complete 10-paragraph story now:
             Promise.all(imagePromises).then((results) => {
                 console.log('All images loaded:', results);
                 const successCount = results.filter(r => r.loaded).length;
-                console.log(`Successfully loaded ${successCount}/${totalImages} AI images`);
+                console.log(`Successfully loaded ${successCount}/${totalImagesToLoad} AI images`);
                 enableStoryOpening();
                 // Store preloaded images for use in book mode
                 window.preloadedImages = results;
+                // Reset loading flag
+                window.imageLoadingInProgress = false;
             });
         }
 
