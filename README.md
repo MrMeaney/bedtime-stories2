@@ -60,4 +60,4 @@ The app tries multiple free Hugging Face models for best results:
 
 ## Fallback System
 
-If all AI services are unavailable, the app automatically falls back to an intelligent template system to ensure stories are always generated.
+If all AI services are unavailable, the app automatically falls back to an intelligent template system to ensure stories are always generated.# Force sync
