@@ -1,7 +1,7 @@
 {
   "name": "bedtime-stories-ai",
   "version": "1.0.0",
-  "description": "AI-powered bedtime stories app using Claude",
+  "description": "AI-powered bedtime stories app using free Hugging Face AI",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step needed for static site'",
