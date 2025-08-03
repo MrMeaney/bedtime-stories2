@@ -963,23 +963,40 @@
         }
 
         async function createAIStory(character, setting, themes, element) {
-            console.log('🤖 Starting AI story generation for:', character, 'in', setting);
+            console.log('🤖 Starting Claude AI story generation for:', character, 'in', setting);
             
-            // Try multiple AI services for better reliability
-            const services = [
-                { name: 'OpenAI Compatible', func: () => tryOpenAICompatibleAPI(character, setting, themes, element) },
-                { name: 'Hugging Face', func: () => tryHuggingFaceAPI(character, setting, themes, element) },
-                { name: 'Advanced Template', func: () => tryLocalAIGeneration(character, setting, themes, element) }
-            ];
-            
-            // Use our new intelligent system instead of unreliable external APIs
-            const uniqueStory = createIntelligentUniqueStory(character, setting, themes, element);
-            
-            // Simulate AI processing time for better UX
-            await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-            
-            console.log('✅ Intelligent story generation succeeded! Generated', uniqueStory.pages.length, 'pages');
-            return uniqueStory;
+            try {
+                // Call our serverless function
+                const response = await fetch('/api/generate-story', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        character,
+                        setting,
+                        themes,
+                        element
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API call failed: ${response.status}`);
+                }
+
+                const storyData = await response.json();
+                console.log('✅ Claude AI story generation succeeded! Generated', storyData.pages.length, 'pages');
+                return storyData;
+
+            } catch (error) {
+                console.log('❌ Claude AI generation failed:', error);
+                console.log('🔄 Falling back to template system...');
+                
+                // Fallback to template system if AI fails
+                const fallbackStory = createIntelligentUniqueStory(character, setting, themes, element);
+                console.log('✅ Template fallback succeeded! Generated', fallbackStory.pages.length, 'pages');
+                return fallbackStory;
+            }
         }
 
         async function tryOpenAICompatibleAPI(character, setting, themes, element) {
