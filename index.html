@@ -2873,36 +2873,45 @@ Write the complete 10-paragraph story now:
 
         function displayStory(story) {
             console.log('displayStory called with story:', story);
-            // Show confirmation message in the main window
+            
+            // Store the story for the book mode
+            currentStory = story;
+            
+            // Show loading message and start preloading images
             document.getElementById('storyContent').innerHTML = `
                 <div style="text-align: center; padding: 50px;">
                     <h3 style="color: #5a67d8; margin-bottom: 20px;">📖 Your Story is Ready!</h3>
-                    <p style="font-size: 1.1em; margin-bottom: 15px;">Click the button below to open your magical storybook!</p>
-                    <p style="font-size: 0.95em; color: #666; margin-bottom: 20px;">
-                        ✨ AI illustrations are being created and will appear as you read
-                    </p>
-                    <button onclick="openStoryBook()" style="
-                        background: linear-gradient(135deg, #ff6b6b, #ffa500);
+                    <p style="font-size: 1.1em; margin-bottom: 15px;">Creating magical AI illustrations for your story...</p>
+                    <div id="imageLoadingStatus" style="margin: 20px 0;">
+                        <div style="background: #f0f0f0; border-radius: 10px; padding: 20px; margin: 20px 0;">
+                            <div style="font-size: 32px; margin-bottom: 10px;">🎨</div>
+                            <div id="loadingText">Generating AI artwork... (0/${story.pages.length} complete)</div>
+                            <div style="background: #e0e0e0; border-radius: 5px; height: 8px; margin: 15px 0;">
+                                <div id="progressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; border-radius: 5px; width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="openStoryBtn" onclick="openStoryBook()" disabled style="
+                        background: #cccccc;
                         color: white;
                         border: none;
                         padding: 15px 30px;
                         border-radius: 25px;
-                        cursor: pointer;
+                        cursor: not-allowed;
                         font-size: 1.2em;
                         font-weight: bold;
                         text-transform: uppercase;
                         letter-spacing: 1px;
                         margin-top: 15px;
-                        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
                         transition: all 0.3s ease;
-                    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 10px 25px rgba(255, 107, 107, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(255, 107, 107, 0.3)'">
-                        ✨ Open Story Book ✨
+                    ">
+                        ⏳ Preparing Story...
                     </button>
                 </div>
             `;
             
-            // Store the story for the book mode
-            currentStory = story;
+            // Start preloading images
+            preloadStoryImages(story);
         }
 
         function openStoryBook() {
@@ -2984,10 +2993,16 @@ Write the complete 10-paragraph story now:
                 page.className = 'book-page';
                 page.dataset.page = index + 1;
                 
-                // Generate AI image for this page
-                const imagePrompt = generateImagePrompt(story.character, story.setting, index);
-                console.log(`Generated AI image prompt for page ${index + 1}:`, imagePrompt);
-                const aiImageUrl = generateAIImage(imagePrompt, index);
+                // Use preloaded image if available, otherwise generate new one
+                let aiImageUrl;
+                if (window.preloadedImages && window.preloadedImages[index]) {
+                    aiImageUrl = window.preloadedImages[index].url;
+                    console.log(`Using preloaded image for page ${index + 1}`);
+                } else {
+                    const imagePrompt = generateImagePrompt(story.character, story.setting, index);
+                    aiImageUrl = generateAIImage(imagePrompt, index);
+                    console.log(`Generated new AI image for page ${index + 1}`);
+                }
                 
                 page.innerHTML = `
                     <div class="page-content">
@@ -3172,6 +3187,90 @@ Write the complete 10-paragraph story now:
             </svg>`;
             
             return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        }
+
+        function preloadStoryImages(story) {
+            let loadedCount = 0;
+            const totalImages = story.pages.length;
+            const imagePromises = [];
+            
+            // Generate and preload all images
+            story.pages.forEach((pageText, index) => {
+                const imagePrompt = generateImagePrompt(story.character, story.setting, index);
+                const aiImageUrl = generateAIImage(imagePrompt, index);
+                
+                const promise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        loadedCount++;
+                        updateLoadingProgress(loadedCount, totalImages);
+                        resolve({ index, url: aiImageUrl, loaded: true });
+                    };
+                    img.onerror = () => {
+                        loadedCount++;
+                        updateLoadingProgress(loadedCount, totalImages);
+                        // Use fallback image if AI image fails
+                        resolve({ index, url: generateFallbackImage(index), loaded: false });
+                    };
+                    img.src = aiImageUrl;
+                    
+                    // Timeout after 15 seconds per image
+                    setTimeout(() => {
+                        if (!img.complete) {
+                            loadedCount++;
+                            updateLoadingProgress(loadedCount, totalImages);
+                            resolve({ index, url: generateFallbackImage(index), loaded: false });
+                        }
+                    }, 15000);
+                });
+                
+                imagePromises.push(promise);
+            });
+            
+            // Wait for all images to load or timeout
+            Promise.all(imagePromises).then((results) => {
+                console.log('All images loaded:', results);
+                enableStoryOpening();
+                // Store preloaded images for use in book mode
+                window.preloadedImages = results;
+            });
+        }
+
+        function updateLoadingProgress(loaded, total) {
+            const percentage = (loaded / total) * 100;
+            const progressBar = document.getElementById('progressBar');
+            const loadingText = document.getElementById('loadingText');
+            
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+            }
+            if (loadingText) {
+                loadingText.textContent = `Generating AI artwork... (${loaded}/${total} complete)`;
+            }
+        }
+
+        function enableStoryOpening() {
+            const button = document.getElementById('openStoryBtn');
+            const loadingText = document.getElementById('loadingText');
+            
+            if (button) {
+                button.disabled = false;
+                button.style.background = 'linear-gradient(135deg, #ff6b6b, #ffa500)';
+                button.style.cursor = 'pointer';
+                button.innerHTML = '✨ Open Story Book ✨';
+                button.onmouseover = () => {
+                    button.style.transform = 'translateY(-3px)';
+                    button.style.boxShadow = '0 10px 25px rgba(255, 107, 107, 0.4)';
+                };
+                button.onmouseout = () => {
+                    button.style.transform = 'translateY(0)';
+                    button.style.boxShadow = '0 5px 15px rgba(255, 107, 107, 0.3)';
+                };
+            }
+            
+            if (loadingText) {
+                loadingText.innerHTML = '🎨 <strong>All illustrations ready!</strong> Your magical storybook awaits!';
+            }
         }
 
         function generateReliableStoryIllustration(pageIndex) {
