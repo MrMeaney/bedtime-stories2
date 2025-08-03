@@ -1,10 +1,11 @@
 # 🌙 AI-Powered Bedtime Stories
 
-A magical bedtime stories app that uses Claude AI to generate unique, personalized stories for children.
+A magical bedtime stories app that uses **free Hugging Face AI** to generate unique, personalized stories for children.
 
 ## Features
 
-- 🤖 **AI-Generated Stories**: Each story is uniquely created by Claude AI
+- 🤖 **AI-Generated Stories**: Each story is uniquely created by Hugging Face AI models
+- 💰 **Completely Free**: No API keys or costs required!
 - 🎨 **Custom Characters & Settings**: Choose from various characters and magical settings
 - 📖 **Beautiful Storybook Format**: Stories display in an interactive storybook with illustrations
 - 🌟 **Educational Themes**: Stories incorporate valuable lessons about friendship, kindness, courage, and more
@@ -12,37 +13,25 @@ A magical bedtime stories app that uses Claude AI to generate unique, personaliz
 
 ## Deployment Setup
 
-### 1. Get Claude API Key
-1. Sign up at [Anthropic Console](https://console.anthropic.com/)
-2. Create an API key
-3. Copy the key for the next step
-
-### 2. Deploy to Vercel
+### Super Simple Deployment to Vercel
 
 #### Option A: Deploy with Vercel CLI
 ```bash
 # Install Vercel CLI
 npm i -g vercel
 
-# Deploy
+# Deploy (no environment variables needed!)
 vercel
-
-# Add your API key as environment variable
-vercel env add ANTHROPIC_API_KEY
-# Paste your Claude API key when prompted
 ```
 
 #### Option B: Deploy with GitHub + Vercel Dashboard
 1. Push this repo to GitHub
 2. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 3. Import your GitHub repository
-4. In Environment Variables, add:
-   - `ANTHROPIC_API_KEY` = your Claude API key
-5. Deploy!
+4. Deploy! (No environment variables needed)
 
-### 3. Environment Variables
-The app requires one environment variable:
-- `ANTHROPIC_API_KEY`: Your Anthropic Claude API key
+### No Environment Variables Required!
+This app uses free Hugging Face models, so no API keys or configuration needed.
 
 ## Local Development
 
@@ -50,24 +39,25 @@ The app requires one environment variable:
 # Install dependencies
 npm install
 
-# Create .env.local file with your API key
-echo "ANTHROPIC_API_KEY=your_api_key_here" > .env.local
-
-# Start development server
+# Start development server (no setup needed!)
 vercel dev
 ```
 
 ## How It Works
 
 1. **Story Generation**: User selects character, setting, and themes
-2. **AI Processing**: Request sent to Claude API via serverless function
-3. **Story Creation**: Claude generates a 6-page story with the specified elements
+2. **AI Processing**: Request sent to free Hugging Face AI models via serverless function
+3. **Story Creation**: AI generates a 6-page story with the specified elements
 4. **Display**: Story opens in beautiful storybook format with SVG illustrations
 
-## API Usage
+## AI Models Used
 
-The app uses Claude 3 Haiku for fast, cost-effective story generation. Each story costs approximately $0.01-0.02 to generate.
+The app tries multiple free Hugging Face models for best results:
+- Mixtral 8x7B Instruct
+- Llama 2 7B Chat
+- Zephyr 7B Beta
+- DialoGPT Medium
 
 ## Fallback System
 
-If the AI service is unavailable, the app automatically falls back to an intelligent template system to ensure stories are always generated.
+If all AI services are unavailable, the app automatically falls back to an intelligent template system to ensure stories are always generated.

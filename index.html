@@ -963,7 +963,7 @@
         }
 
         async function createAIStory(character, setting, themes, element) {
-            console.log('🤖 Starting Claude AI story generation for:', character, 'in', setting);
+            console.log('🤖 Starting Hugging Face AI story generation for:', character, 'in', setting);
             
             try {
                 // Call our serverless function
@@ -985,11 +985,11 @@
                 }
 
                 const storyData = await response.json();
-                console.log('✅ Claude AI story generation succeeded! Generated', storyData.pages.length, 'pages');
+                console.log('✅ Hugging Face AI story generation succeeded! Generated', storyData.pages.length, 'pages');
                 return storyData;
 
             } catch (error) {
-                console.log('❌ Claude AI generation failed:', error);
+                console.log('❌ Hugging Face AI generation failed:', error);
                 console.log('🔄 Falling back to template system...');
                 
                 // Fallback to template system if AI fails
