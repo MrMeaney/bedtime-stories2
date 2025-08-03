@@ -3191,11 +3191,18 @@ Write the complete 10-paragraph story now:
             </svg>`;
         }
 
-        function generateAIImage(prompt, pageIndex) {
-            // Use Pollinations.ai for free AI image generation
+        function generateAIImage(prompt, pageIndex, attempt = 0) {
             const cleanPrompt = encodeURIComponent(prompt);
-            const seed = pageIndex + Date.now(); // Unique seed for each image
-            return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=600&height=400&seed=${seed}&enhance=true&model=flux`;
+            const seed = pageIndex + Date.now() + attempt * 1000; // Different seed for retries
+            
+            // Multiple image generation services to try
+            const services = [
+                `https://image.pollinations.ai/prompt/${cleanPrompt}?width=600&height=400&seed=${seed}&enhance=true&model=flux`,
+                `https://image.pollinations.ai/prompt/${cleanPrompt}?width=600&height=400&seed=${seed}&model=turbo`,
+                `https://picsum.photos/seed/${seed}/600/400` // Simple fallback for testing
+            ];
+            
+            return services[attempt % services.length];
         }
 
         function generateFallbackImage(pageIndex) {
@@ -3222,54 +3229,75 @@ Write the complete 10-paragraph story now:
         }
 
         function preloadStoryImages(story) {
-            let loadedCount = 0;
-            const totalImages = story.pages.length;
+            // Reset progress tracking
+            completedImages = 0;
+            totalImagesToLoad = story.pages.length;
             const imagePromises = [];
             
-            // Generate and preload all images
+            // Generate and preload all images with retry logic
             story.pages.forEach((pageText, index) => {
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
-                const aiImageUrl = generateAIImage(imagePrompt, index);
                 
-                const promise = new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        loadedCount++;
-                        updateLoadingProgress(loadedCount, totalImages);
-                        resolve({ index, url: aiImageUrl, loaded: true });
-                    };
-                    img.onerror = () => {
-                        loadedCount++;
-                        updateLoadingProgress(loadedCount, totalImages);
-                        // Use fallback image if AI image fails
-                        resolve({ index, url: generateFallbackImage(index), loaded: false });
-                    };
-                    img.src = aiImageUrl;
-                    
-                    // Timeout after 15 seconds per image
-                    setTimeout(() => {
-                        if (!img.complete) {
-                            loadedCount++;
-                            updateLoadingProgress(loadedCount, totalImages);
-                            resolve({ index, url: generateFallbackImage(index), loaded: false });
-                        }
-                    }, 15000);
-                });
-                
+                const promise = tryLoadImageWithRetry(imagePrompt, index, 3); // Try up to 3 times
                 imagePromises.push(promise);
             });
             
             // Wait for all images to load or timeout
             Promise.all(imagePromises).then((results) => {
                 console.log('All images loaded:', results);
+                const successCount = results.filter(r => r.loaded).length;
+                console.log(`Successfully loaded ${successCount}/${totalImages} AI images`);
                 enableStoryOpening();
                 // Store preloaded images for use in book mode
                 window.preloadedImages = results;
             });
         }
 
-        function updateLoadingProgress(loaded, total) {
-            const percentage = (loaded / total) * 100;
+        function tryLoadImageWithRetry(imagePrompt, index, maxAttempts = 3) {
+            return new Promise((resolve) => {
+                let attempt = 0;
+                
+                function tryLoad() {
+                    const aiImageUrl = generateAIImage(imagePrompt, index, attempt);
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        updateLoadingProgress();
+                        resolve({ index, url: aiImageUrl, loaded: true, attempt: attempt + 1 });
+                    };
+                    
+                    img.onerror = () => {
+                        attempt++;
+                        if (attempt < maxAttempts) {
+                            console.log(`Image ${index + 1} failed, retrying (${attempt}/${maxAttempts})...`);
+                            setTimeout(tryLoad, 1000); // Wait 1 second before retry
+                        } else {
+                            console.log(`Image ${index + 1} failed all ${maxAttempts} attempts, using fallback`);
+                            updateLoadingProgress();
+                            resolve({ index, url: generateFallbackImage(index), loaded: false, attempt: maxAttempts });
+                        }
+                    };
+                    
+                    img.src = aiImageUrl;
+                    
+                    // Shorter timeout - 8 seconds per attempt
+                    setTimeout(() => {
+                        if (!img.complete) {
+                            img.onerror(); // Trigger retry logic
+                        }
+                    }, 8000);
+                }
+                
+                tryLoad();
+            });
+        }
+        
+        let completedImages = 0;
+        let totalImagesToLoad = 6;
+        
+        function updateLoadingProgress() {
+            completedImages++;
+            const percentage = (completedImages / totalImagesToLoad) * 100;
             const progressBar = document.getElementById('progressBar');
             const loadingText = document.getElementById('loadingText');
             
@@ -3277,7 +3305,7 @@ Write the complete 10-paragraph story now:
                 progressBar.style.width = percentage + '%';
             }
             if (loadingText) {
-                loadingText.textContent = `Generating AI artwork... (${loaded}/${total} complete)`;
+                loadingText.textContent = `Generating AI artwork... (${completedImages}/${totalImagesToLoad} complete)`;
             }
         }
 
