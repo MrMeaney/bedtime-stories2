@@ -2973,15 +2973,13 @@ Write the complete 10-paragraph story now:
                 const svgImageUrl = generateReliableStoryIllustration(index);
                 console.log(`Generated SVG for page ${index + 1}:`, svgImageUrl.substring(0, 100) + '...');
                 
+                // Generate inline SVG instead of data URL
+                const inlineSVG = generateInlineSVG(index);
+                
                 page.innerHTML = `
                     <div class="page-content">
                         <div class="image-container" data-page-index="${index}">
-                            <img src="${svgImageUrl}" 
-                                 alt="Story illustration for page ${index + 1}" 
-                                 class="page-illustration"
-                                 style="opacity: 1;"
-                                 onload="console.log('Image loaded successfully for page ${index + 1}'); this.style.opacity='1'"
-                                 onerror="console.error('Image failed for page ${index + 1}, trying fallback'); this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect width=%22400%22 height=%22300%22 fill=%22%23667eea%22/%3E%3Ctext x=%22200%22 y=%22150%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2224%22%3E🎨%3C/text%3E%3C/svg%3E'"
+                            ${inlineSVG}
                         </div>
                         <div class="page-text">${pageText}</div>
                     </div>
@@ -3095,36 +3093,42 @@ Write the complete 10-paragraph story now:
             return generateReliableStoryIllustration(pageIndex);
         }
 
-        function generateReliableStoryIllustration(pageIndex) {
-            // Create simple, always-working SVG illustrations
+        function generateInlineSVG(pageIndex) {
+            // Create inline SVG that doesn't rely on data URLs
             const colors = ['#667eea', '#764ba2', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
             const primaryColor = colors[pageIndex % colors.length];
             const secondaryColor = colors[(pageIndex + 2) % colors.length];
+            const emojis = ['🌟', '🦋', '🌙', '✨', '🌸', '🍀', '🌈'];
+            const emoji = emojis[pageIndex % emojis.length];
             
-            // Create a simple but beautiful SVG that's guaranteed to work
-            const simpleSVG = `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+            return `<svg class="page-illustration" width="400" height="300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" style="border-radius: 15px; max-width: 100%; height: auto;">
                 <defs>
-                    <linearGradient id="grad${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:${primaryColor};stop-opacity:0.8" />
-                        <stop offset="100%" style="stop-color:${secondaryColor};stop-opacity:0.6" />
+                    <linearGradient id="pageGrad${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${primaryColor};stop-opacity:0.9" />
+                        <stop offset="100%" style="stop-color:${secondaryColor};stop-opacity:0.7" />
                     </linearGradient>
+                    <filter id="glow${pageIndex}">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                        <feMerge> 
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/> 
+                        </feMerge>
+                    </filter>
                 </defs>
-                <rect width="400" height="300" fill="url(#grad${pageIndex})" rx="15"/>
-                <circle cx="100" cy="100" r="30" fill="white" opacity="0.3"/>
-                <circle cx="300" cy="80" r="20" fill="white" opacity="0.4"/>
-                <circle cx="320" cy="200" r="25" fill="white" opacity="0.3"/>
-                <text x="200" y="160" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="32" opacity="0.9">📖</text>
-                <text x="200" y="200" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="16" opacity="0.7">Page ${pageIndex + 1}</text>
+                <rect width="400" height="300" fill="url(#pageGrad${pageIndex})" rx="15"/>
+                <circle cx="80" cy="80" r="25" fill="white" opacity="0.2"/>
+                <circle cx="320" cy="60" r="15" fill="white" opacity="0.3"/>
+                <circle cx="350" cy="220" r="20" fill="white" opacity="0.25"/>
+                <circle cx="50" cy="250" r="18" fill="white" opacity="0.2"/>
+                <text x="200" y="140" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" filter="url(#glow${pageIndex})">${emoji}</text>
+                <text x="200" y="180" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" opacity="0.9">Story Illustration</text>
+                <text x="200" y="220" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" opacity="0.7">Page ${pageIndex + 1}</text>
             </svg>`;
-            
-            try {
-                // Use URL encoding which is more reliable than base64
-                return `data:image/svg+xml,${encodeURIComponent(simpleSVG)}`;
-            } catch (error) {
-                console.error('Error encoding SVG:', error);
-                // Ultimate fallback - minimal SVG
-                return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='${primaryColor}'/%3E%3Ctext x='200' y='150' text-anchor='middle' fill='white' font-size='24'%3E🌟%3C/text%3E%3C/svg%3E`;
-            }
+        }
+
+        function generateReliableStoryIllustration(pageIndex) {
+            // Fallback function for backward compatibility
+            return generateInlineSVG(pageIndex);
         }
 
         // Additional illustration functions (simplified versions for now)
