@@ -2984,46 +2984,20 @@ Write the complete 10-paragraph story now:
                 page.className = 'book-page';
                 page.dataset.page = index + 1;
                 
+                // Generate AI image for this page
                 const imagePrompt = generateImagePrompt(story.character, story.setting, index);
-                const svgImageUrl = generateReliableStoryIllustration(index);
-                console.log(`Generated SVG for page ${index + 1}:`, svgImageUrl.substring(0, 100) + '...');
-                
-                // Use CSS background instead of SVG
-                const colors = ['#667eea', '#764ba2', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
-                const primaryColor = colors[index % colors.length];
-                const secondaryColor = colors[(index + 2) % colors.length];
-                const emojis = ['🌟', '🦋', '🌙', '✨', '🌸', '🍀', '🌈'];
-                const emoji = emojis[index % emojis.length];
+                console.log(`Generated AI image prompt for page ${index + 1}:`, imagePrompt);
+                const aiImageUrl = generateAIImage(imagePrompt, index);
                 
                 page.innerHTML = `
                     <div class="page-content">
-                        <div class="image-container custom-illustration" data-page-index="${index}" 
-                             style="
-                                width: 100% !important;
-                                height: 300px !important;
-                                background: linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%) !important;
-                                border-radius: 15px !important;
-                                display: flex !important;
-                                align-items: center !important;
-                                justify-content: center !important;
-                                position: relative !important;
-                                margin-bottom: 20px !important;
-                                box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-                             ">
-                            <div style="
-                                font-size: 64px;
-                                text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-                                animation: gentle-float 3s ease-in-out infinite;
-                            ">${emoji}</div>
-                            <div style="
-                                position: absolute;
-                                bottom: 15px;
-                                right: 20px;
-                                color: white;
-                                font-size: 14px;
-                                opacity: 0.8;
-                                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-                            ">Page ${index + 1}</div>
+                        <div class="image-container" data-page-index="${index}">
+                            <img src="${aiImageUrl}" 
+                                 alt="Story illustration for page ${index + 1}" 
+                                 class="page-illustration"
+                                 style="width: 100%; height: 300px; object-fit: cover; border-radius: 15px;"
+                                 onload="console.log('AI image loaded for page ${index + 1}');"
+                                 onerror="this.src='${generateFallbackImage(index)}';">
                         </div>
                         <div class="page-text">${pageText}</div>
                     </div>
@@ -3168,6 +3142,36 @@ Write the complete 10-paragraph story now:
                 <text x="200" y="180" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" opacity="0.9">Story Illustration</text>
                 <text x="200" y="220" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" opacity="0.7">Page ${pageIndex + 1}</text>
             </svg>`;
+        }
+
+        function generateAIImage(prompt, pageIndex) {
+            // Use Pollinations.ai for free AI image generation
+            const cleanPrompt = encodeURIComponent(prompt);
+            const seed = pageIndex + Date.now(); // Unique seed for each image
+            return `https://image.pollinations.ai/prompt/${cleanPrompt}?width=600&height=400&seed=${seed}&enhance=true&model=flux`;
+        }
+
+        function generateFallbackImage(pageIndex) {
+            // Fallback to our gradient backgrounds if AI images fail
+            const colors = ['#667eea', '#764ba2', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+            const primaryColor = colors[pageIndex % colors.length];
+            const secondaryColor = colors[(pageIndex + 2) % colors.length];
+            const emojis = ['🌟', '🦋', '🌙', '✨', '🌸', '🍀', '🌈'];
+            const emoji = emojis[pageIndex % emojis.length];
+            
+            const svg = `<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="fallbackGrad${pageIndex}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${primaryColor};stop-opacity:0.9" />
+                        <stop offset="100%" style="stop-color:${secondaryColor};stop-opacity:0.7" />
+                    </linearGradient>
+                </defs>
+                <rect width="600" height="400" fill="url(#fallbackGrad${pageIndex})" rx="15"/>
+                <text x="300" y="220" text-anchor="middle" fill="white" font-family="Arial" font-size="64">${emoji}</text>
+                <text x="300" y="280" text-anchor="middle" fill="white" font-family="Arial" font-size="18" opacity="0.8">Story Illustration</text>
+            </svg>`;
+            
+            return `data:image/svg+xml,${encodeURIComponent(svg)}`;
         }
 
         function generateReliableStoryIllustration(pageIndex) {
