@@ -2831,6 +2831,7 @@ Write the complete 10-paragraph story now:
         }
 
         function displayStory(story) {
+            console.log('displayStory called with story:', story);
             // Show confirmation message in the main window
             document.getElementById('storyContent').innerHTML = `
                 <div style="text-align: center; padding: 50px;">
@@ -2864,7 +2865,12 @@ Write the complete 10-paragraph story now:
         }
 
         function openStoryBook() {
-            if (!currentStory) return;
+            console.log('openStoryBook called, currentStory:', currentStory);
+            if (!currentStory) {
+                console.error('No current story available!');
+                alert('No story available. Please generate a story first.');
+                return;
+            }
             
             // Create book pages
             createBookPages(currentStory);
@@ -3302,9 +3308,10 @@ Write the complete 10-paragraph story now:
         }
 
         function nextPage() {
-            if (currentPageIndex < document.querySelectorAll('.book-page').length - 1) {
+            if (currentPageIndex < totalPages - 1) {
                 currentPageIndex++;
                 showBookPage(currentPageIndex);
+                updateBookNavigation();
             }
         }
 
@@ -3312,6 +3319,7 @@ Write the complete 10-paragraph story now:
             if (currentPageIndex > 0) {
                 currentPageIndex--;
                 showBookPage(currentPageIndex);
+                updateBookNavigation();
             }
         }
 
@@ -3326,6 +3334,16 @@ Write the complete 10-paragraph story now:
                 const progress = (currentPage / (totalPages - 1)) * 100;
                 progressBar.style.width = `${progress}%`;
             }
+        }
+
+        function updateBookNavigation() {
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            if (prevBtn) prevBtn.disabled = currentPageIndex === 0;
+            if (nextBtn) nextBtn.disabled = currentPageIndex === totalPages - 1;
+            
+            updateProgressBar(currentPageIndex, totalPages);
         }
 
         function handleBookKeyboard(e) {
