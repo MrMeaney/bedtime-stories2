@@ -19,143 +19,64 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Create a simple, direct prompt that works better with Hugging Face models
-    const prompt = `Write a 6-page bedtime story for children about a ${character} in a ${setting} who finds a magical ${element} and learns about ${themes}. Each page should be 2-3 sentences.
+    // Create a better prompt for story generation
+    const prompt = `Write a magical bedtime story for children. Character: ${character}. Setting: ${setting}. Magic item: ${element}. Theme: ${themes}. Write exactly 6 short pages, each 2-3 sentences. Make it creative and unique.`;
 
-Page 1:`;
-
-    // Use models that are better for text generation and more reliable
-    const models = [
-      'HuggingFaceH4/zephyr-7b-beta',
-      'microsoft/DialoGPT-medium',
-      'facebook/blenderbot-400M-distill',
-      'google/flan-t5-large'
+    // Try free text generation APIs that work better
+    const apis = [
+      {
+        name: 'Pollinations Text',
+        url: 'https://text.pollinations.ai/prompt/' + encodeURIComponent(prompt),
+        method: 'GET'
+      }
     ];
 
-    let storyData = null;
-    let lastError = null;
-
-    for (const model of models) {
+    // Try the APIs
+    for (const api of apis) {
       try {
-        console.log(`Trying Hugging Face model: ${model}`);
+        console.log(`Trying ${api.name}...`);
         
-        const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            inputs: prompt,
-            parameters: {
-              max_length: 1000,
-              temperature: 0.7,
-              do_sample: true,
-              top_p: 0.9
-            }
-          })
+        const response = await fetch(api.url, {
+          method: api.method,
+          headers: api.method === 'POST' ? { 'Content-Type': 'application/json' } : {}
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Hugging Face API error for ${model}:`, response.status, errorText);
-          lastError = `API error: ${response.status} - ${errorText}`;
+        if (response.ok) {
+          const text = await response.text();
+          console.log('API response:', text.substring(0, 200) + '...');
           
-          // If it's a model loading error, wait a bit before trying next model
-          if (response.status === 503) {
-            console.log(`Model ${model} is loading, trying next model...`);
-          }
-          continue;
-        }
-
-        const huggingFaceResponse = await response.json();
-        console.log('Hugging Face response:', huggingFaceResponse);
-
-        let storyText = '';
-        if (Array.isArray(huggingFaceResponse) && huggingFaceResponse[0]?.generated_text) {
-          storyText = huggingFaceResponse[0].generated_text;
-        } else if (huggingFaceResponse.generated_text) {
-          storyText = huggingFaceResponse.generated_text;
-        } else {
-          console.error('Unexpected response format:', huggingFaceResponse);
-          lastError = 'Unexpected response format';
-          continue;
-        }
-
-        // Remove the prompt from the response
-        const storyStart = storyText.indexOf('Page 1:');
-        const cleanStory = storyStart !== -1 ? storyText.substring(storyStart) : storyText;
-
-        // Parse the story into pages
-        const pages = [];
-        const pageRegex = /Page \d+:(.*?)(?=Page \d+:|$)/gs;
-        let match;
-        
-        while ((match = pageRegex.exec(cleanStory)) !== null) {
-          const pageText = match[1].trim();
-          if (pageText) {
-            pages.push(pageText);
+          if (text && text.length > 100) {
+            // Parse the response into pages
+            const pages = parseStoryFromText(text, character, setting, element);
+            if (pages.length >= 6) {
+              return res.status(200).json({
+                title: `The Adventures of ${character}`,
+                pages: pages.slice(0, 6),
+                character: character,
+                setting: setting,
+                generatedBy: api.name,
+                timestamp: new Date().toISOString()
+              });
+            }
           }
         }
-
-        // If regex parsing failed, split by line breaks as fallback
-        if (pages.length === 0) {
-          const lines = cleanStory.split('\n').filter(line => line.trim());
-          for (let i = 0; i < Math.min(6, lines.length); i++) {
-            pages.push(lines[i].trim());
-          }
-        }
-
-        // Ensure we have exactly 6 pages
-        while (pages.length < 6) {
-          pages.push(`The ${character} continued their magical adventure in the ${setting}.`);
-        }
-        if (pages.length > 6) {
-          pages.splice(6);
-        }
-
-        // Create story data
-        storyData = {
-          title: `The Adventures of ${character}`,
-          pages: pages
-        };
-
-        console.log(`Successfully generated story with ${model}`);
-        break;
-
       } catch (error) {
-        console.error(`Error with model ${model}:`, error);
-        lastError = error.message;
+        console.error(`${api.name} failed:`, error);
         continue;
       }
     }
 
-    // If no model worked, return fallback
-    if (!storyData) {
-      console.log('All Hugging Face models failed, using fallback');
-      return res.status(200).json({
-        title: `The Adventures of ${character}`,
-        pages: [
-          `Once upon a time, in a magical ${setting}, there lived a wonderful ${character}. This ${character} was known throughout the land for being kind and brave.`,
-          `One sunny morning, the ${character} discovered a mysterious ${element} hidden beneath an old oak tree. The ${element} sparkled with a warm, golden light.`,
-          `As the ${character} touched the ${element}, something amazing happened! It began to glow brighter, and the ${character} felt filled with courage and wisdom.`,
-          `The ${character} decided to use the ${element} to help others in the ${setting}. They visited friends who needed help and shared the magic of ${themes}.`,
-          `With each act of kindness, the ${element} grew brighter and more beautiful. The ${character} learned that sharing and caring made the magic even stronger.`,
-          `As the sun set over the ${setting}, the ${character} smiled peacefully. They had discovered that the greatest magic of all comes from ${themes} and helping others. The end.`
-        ],
-        character: character,
-        setting: setting,
-        generatedBy: 'Hugging Face AI (Fallback)',
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    // Return the story in the format expected by the frontend
+    console.log('All APIs failed, using fallback story generation');
+    
+    // Enhanced fallback with more variety
+    const storyData = generateEnhancedFallbackStory(character, setting, themes, element);
+    
     return res.status(200).json({
       title: storyData.title,
       pages: storyData.pages,
       character: character,
       setting: setting,
-      generatedBy: 'Hugging Face AI',
+      generatedBy: 'Enhanced Template System',
       timestamp: new Date().toISOString()
     });
 
@@ -163,4 +84,61 @@ Page 1:`;
     console.error('Error generating story:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+}
+
+function parseStoryFromText(text, character, setting, element) {
+  // Try to intelligently parse the AI-generated text into pages
+  const pages = [];
+  
+  // Split by common separators
+  let parts = text.split(/(?:\n\s*\n|\. {2,}|Page \d+[:.]?)/i);
+  
+  // Clean and filter parts
+  parts = parts
+    .map(part => part.trim())
+    .filter(part => part.length > 20 && part.length < 500)
+    .slice(0, 8); // Take up to 8 parts to pick best 6
+  
+  // If we have good parts, use them
+  if (parts.length >= 4) {
+    for (let i = 0; i < Math.min(6, parts.length); i++) {
+      pages.push(parts[i]);
+    }
+  }
+  
+  return pages;
+}
+
+function generateEnhancedFallbackStory(character, setting, themes, element) {
+  const storyVariations = [
+    {
+      title: `${character} and the Magical ${element}`,
+      template: [
+        `In the heart of the ${setting}, a curious ${character} was exploring when they spotted something glowing. Hidden among the ancient trees was a beautiful ${element} that sparkled like starlight.`,
+        `When the ${character} gently touched the ${element}, it began to hum with magical energy. Suddenly, the ${character} could understand the language of all the creatures in the ${setting}.`,
+        `A tiny field mouse approached and told the ${character} about a problem. The animals of the ${setting} had lost their way to the magical spring that kept their home beautiful and green.`,
+        `The ${character} knew they had to help. Using the power of the ${element}, they created a trail of glowing light that would guide all the lost animals safely home.`,
+        `One by one, rabbits, squirrels, and birds followed the magical trail. The ${character} learned that helping others made the ${element} glow even brighter and more beautiful.`,
+        `As the sun set over the ${setting}, all the animals were safely home. The ${character} smiled, knowing that the greatest magic comes from ${themes}. The ${element} would always remind them of this wonderful day.`
+      ]
+    },
+    {
+      title: `The Adventure of ${character} in ${setting}`,
+      template: [
+        `Once upon a time, a brave ${character} lived near the magical ${setting}. Every morning, they would explore new paths and discover wonderful secrets hidden throughout the land.`,
+        `On this special day, the ${character} found a mysterious ${element} resting beside a babbling brook. The moment they picked it up, the ${element} began to glow with warm, golden light.`,
+        `The ${element} showed the ${character} a vision of creatures in the ${setting} who needed help. Some were lost, some were scared, and some just needed a friend to talk to.`,
+        `Without hesitation, the ${character} set off on their mission. They used the ${element}'s gentle light to comfort a frightened owl and helped a family of rabbits find their burrow.`,
+        `As the ${character} continued helping others, they discovered something amazing. Each act of kindness made the ${element} shine brighter and filled their heart with joy and warmth.`,
+        `When evening came, the ${character} sat peacefully in the ${setting}, surrounded by all their new friends. They had learned that ${themes} creates the most powerful magic of all.`
+      ]
+    }
+  ];
+  
+  const selectedStory = storyVariations[Math.floor(Math.random() * storyVariations.length)];
+  
+  return {
+    title: selectedStory.title,
+    pages: selectedStory.template
+  };
 }
