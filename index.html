@@ -2864,43 +2864,26 @@ Write the complete 10-paragraph story now:
             currentStory = story;
         }
 
-        function testButton() {
-            alert('Button clicked! JavaScript is working.');
-            console.log('Button test successful');
-            openStoryBook();
-        }
-
         function openStoryBook() {
             console.log('openStoryBook called, currentStory:', currentStory);
-            alert('Step 1: openStoryBook called with story: ' + (currentStory ? currentStory.title : 'null'));
-            
             if (!currentStory) {
                 console.error('No current story available!');
                 alert('No story available. Please generate a story first.');
                 return;
             }
             
-            alert('Step 2: About to create book pages');
             // Create book pages
             createBookPages(currentStory);
             
-            alert('Step 3: About to show book mode');
             // Show book mode
-            const bookMode = document.getElementById('bookMode');
-            if (!bookMode) {
-                alert('ERROR: bookMode element not found!');
-                return;
-            }
-            bookMode.classList.add('active');
+            document.getElementById('bookMode').classList.add('active');
             
-            alert('Step 4: About to initialize navigation');
             // Initialize book navigation
             currentPageIndex = 0;
             totalPages = currentStory.pages.length + 1; // +1 for cover page
             updateBookNavigation();
             showBookPage(0);
             
-            alert('Step 5: Book should be open now');
             // Add keyboard navigation
             document.addEventListener('keydown', handleBookKeyboard);
         }
@@ -2909,10 +2892,9 @@ Write the complete 10-paragraph story now:
             console.log('createBookPages called with:', story);
             const bookPages = document.getElementById('bookPages');
             if (!bookPages) {
-                alert('ERROR: bookPages element not found!');
+                console.error('ERROR: bookPages element not found!');
                 return;
             }
-            alert('createBookPages: Found bookPages element');
             bookPages.innerHTML = '';
             
             // Store story globally for image generation
@@ -2921,7 +2903,6 @@ Write the complete 10-paragraph story now:
             // Start preloading images immediately
             preloadImages(story);
             const storyId = hashString(story.title + story.character + story.setting);
-            alert('createBookPages: About to create cover page');
             
             // Create cover page
             const coverPage = document.createElement('div');
@@ -3312,6 +3293,59 @@ Write the complete 10-paragraph story now:
             // But we keep it for compatibility
             console.log('Preloading images for story:', story.title);
             return Promise.resolve();
+        }
+
+        function getCharacterEmoji(character) {
+            const characterEmojis = {
+                'butterfly': '🦋', 'dancing butterfly': '🦋',
+                'dragon': '🐉', 'friendly dragon': '🐉', 'magical dragon': '🐉',
+                'unicorn': '🦄', 'magical unicorn': '🦄',
+                'fairy': '🧚', 'magical fairy': '🧚',
+                'fox': '🦊', 'clever fox': '🦊',
+                'bear': '🐻', 'cheerful bear': '🐻', 'gentle bear': '🐻',
+                'rabbit': '🐰', 'friendly bunny': '🐰', 'bunny': '🐰',
+                'owl': '🦉', 'wise owl': '🦉',
+                'cat': '🐱', 'curious kitten': '🐱', 'kitten': '🐱',
+                'puppy': '🐶', 'playful puppy': '🐶',
+                'elephant': '🐘', 'gentle elephant': '🐘',
+                'bird': '🐦', 'singing bird': '🐦',
+                'dolphin': '🐬', 'swimming dolphin': '🐬'
+            };
+            
+            // Try to find exact match first, then partial match
+            if (characterEmojis[character]) {
+                return characterEmojis[character];
+            }
+            
+            // Try partial matching for compound characters
+            for (const [key, emoji] of Object.entries(characterEmojis)) {
+                if (character.toLowerCase().includes(key) || key.includes(character.toLowerCase())) {
+                    return emoji;
+                }
+            }
+            
+            return '🌟'; // Default emoji
+        }
+
+        function getSettingEmoji(setting) {
+            const settingEmojis = {
+                'enchanted forest': '🌲',
+                'magical kingdom': '🏰',
+                'underwater world': '🌊',
+                'cozy village': '🏘️',
+                'cloud city': '☁️',
+                'space station': '🚀',
+                'fairy village': '🏡',
+                'pirate ship': '⛵',
+                'circus tent': '🎪',
+                'crystal palace': '💎',
+                'beautiful garden': '🌺',
+                'magical treehouse': '🌳',
+                'happy farm': '🚜',
+                'grandmother\'s house': '🏠'
+            };
+            
+            return settingEmojis[setting] || '✨'; // Default emoji
         }
 
         function showBookPage(pageIndex) {
