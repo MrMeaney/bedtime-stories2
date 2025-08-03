@@ -965,7 +965,18 @@
         async function createAIStory(character, setting, themes, element) {
             console.log('🤖 Starting Hugging Face AI story generation for:', character, 'in', setting);
             
+            // Check if we're running locally (no serverless function available)
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+            
+            if (isLocal) {
+                console.log('🏠 Running locally - using enhanced template system');
+                const templateStory = createIntelligentUniqueStory(character, setting, themes, element);
+                console.log('✅ Enhanced template story generated! Generated', templateStory.pages.length, 'pages');
+                return templateStory;
+            }
+            
             try {
+                console.log('🌐 Attempting Hugging Face API call...');
                 // Call our serverless function
                 const response = await fetch('/api/generate-story', {
                     method: 'POST',

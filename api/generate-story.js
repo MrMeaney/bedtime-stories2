@@ -19,43 +19,17 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Create the prompt for Hugging Face
-    const prompt = `<s>[INST] Create a magical bedtime story for children aged 4-8. Here are the story parameters:
+    // Create a simple, direct prompt that works better with Hugging Face models
+    const prompt = `Write a 6-page bedtime story for children about a ${character} in a ${setting} who finds a magical ${element} and learns about ${themes}. Each page should be 2-3 sentences.
 
-Character: ${character}
-Setting: ${setting}
-Themes: ${themes}
-Special Element: ${element}
+Page 1:`;
 
-Please create a story that:
-- Is exactly 6 pages long
-- Has age-appropriate language and content
-- Teaches valuable lessons about ${themes}
-- Features the ${character} as the main character
-- Takes place in ${setting}
-- Incorporates the special ${element} meaningfully
-- Has a heartwarming, positive ending
-- Each page should be 2-3 sentences perfect for bedtime reading
-
-Return ONLY a valid JSON response in this exact format (no other text):
-{
-  "title": "Story Title Here",
-  "pages": [
-    "Page 1 text here (2-3 sentences)",
-    "Page 2 text here (2-3 sentences)",
-    "Page 3 text here (2-3 sentences)",
-    "Page 4 text here (2-3 sentences)",
-    "Page 5 text here (2-3 sentences)",
-    "Page 6 text here (2-3 sentences)"
-  ]
-} [/INST]`;
-
-    // Try multiple Hugging Face models for better reliability
+    // Use models that are better for text generation and more reliable
     const models = [
+      'HuggingFaceH4/zephyr-7b-beta',
       'microsoft/DialoGPT-medium',
-      'mistralai/Mixtral-8x7B-Instruct-v0.1',
-      'meta-llama/Llama-2-7b-chat-hf',
-      'HuggingFaceH4/zephyr-7b-beta'
+      'facebook/blenderbot-400M-distill',
+      'google/flan-t5-large'
     ];
 
     let storyData = null;
@@ -84,7 +58,12 @@ Return ONLY a valid JSON response in this exact format (no other text):
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`Hugging Face API error for ${model}:`, response.status, errorText);
-          lastError = `API error: ${response.status}`;
+          lastError = `API error: ${response.status} - ${errorText}`;
+          
+          // If it's a model loading error, wait a bit before trying next model
+          if (response.status === 503) {
+            console.log(`Model ${model} is loading, trying next model...`);
+          }
           continue;
         }
 
@@ -102,44 +81,43 @@ Return ONLY a valid JSON response in this exact format (no other text):
           continue;
         }
 
-        // Extract JSON from the response (remove the prompt part)
-        const jsonStart = storyText.indexOf('{');
-        const jsonEnd = storyText.lastIndexOf('}') + 1;
+        // Remove the prompt from the response
+        const storyStart = storyText.indexOf('Page 1:');
+        const cleanStory = storyStart !== -1 ? storyText.substring(storyStart) : storyText;
+
+        // Parse the story into pages
+        const pages = [];
+        const pageRegex = /Page \d+:(.*?)(?=Page \d+:|$)/gs;
+        let match;
         
-        if (jsonStart === -1 || jsonEnd === 0) {
-          console.error('No JSON found in response:', storyText);
-          lastError = 'No JSON found in response';
-          continue;
-        }
-
-        const jsonString = storyText.substring(jsonStart, jsonEnd);
-
-        // Parse the JSON response
-        try {
-          storyData = JSON.parse(jsonString);
-        } catch (parseError) {
-          console.error('Failed to parse JSON:', parseError, 'JSON:', jsonString);
-          lastError = 'JSON parse error';
-          continue;
-        }
-
-        // Validate the story structure
-        if (!storyData.title || !storyData.pages || !Array.isArray(storyData.pages)) {
-          console.error('Invalid story structure:', storyData);
-          lastError = 'Invalid story structure';
-          continue;
-        }
-
-        // Ensure we have 6 pages
-        if (storyData.pages.length < 6) {
-          // Pad with additional pages if needed
-          while (storyData.pages.length < 6) {
-            storyData.pages.push(`The ${character} continued their magical adventure in the ${setting}.`);
+        while ((match = pageRegex.exec(cleanStory)) !== null) {
+          const pageText = match[1].trim();
+          if (pageText) {
+            pages.push(pageText);
           }
-        } else if (storyData.pages.length > 6) {
-          // Trim to 6 pages
-          storyData.pages = storyData.pages.slice(0, 6);
         }
+
+        // If regex parsing failed, split by line breaks as fallback
+        if (pages.length === 0) {
+          const lines = cleanStory.split('\n').filter(line => line.trim());
+          for (let i = 0; i < Math.min(6, lines.length); i++) {
+            pages.push(lines[i].trim());
+          }
+        }
+
+        // Ensure we have exactly 6 pages
+        while (pages.length < 6) {
+          pages.push(`The ${character} continued their magical adventure in the ${setting}.`);
+        }
+        if (pages.length > 6) {
+          pages.splice(6);
+        }
+
+        // Create story data
+        storyData = {
+          title: `The Adventures of ${character}`,
+          pages: pages
+        };
 
         console.log(`Successfully generated story with ${model}`);
         break;
